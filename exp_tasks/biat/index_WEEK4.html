@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BIAT</title>
+		  <script type="text/javascript" src="jspsych-6.0.5/jspsych.js"></script>
+		  <link rel="stylesheet" type="text/css" href="jspsych-6.0.5/css/jspsych.css"/>
+
+		  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+		  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-biat-image_ds.js"></script>
+		  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-biat-html_ds.js"></script>
+		<script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+  
+		  <script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+		  <!-- <script type="text/javascript" src="lib/jspsych-pavlovia-3.0.0.js"></script> -->
+  		<script type="text/javascript" src="lib/jspsych-pavlovia-3.1.0.js"></script>
+<!-- <style>
+	* {
+		cursor: none;
+	}
+</style> -->
+
+	</head>
+	<body></body>
+	<script>
+
+		// **********SOME NOTES:**********
+		// This program uses URL variables to set a number of variables and control the experiment ordering. To assign values to URL
+		// variables, you append the normal URL (whether online or locally) with a '?' and then each variable assignement separated
+		// by an '&' symbol.  The URL that would run the default parameters (i.e. what happens if you just use the base URL) is as
+		// follows:
+		//
+		// http://www.examplewebsite.com/index.html?SID=testing&PAV=0&currTsk=1&IATHAND=wCAL&IATCOND=CONG
+		//
+		// Descriptions of the variables follow
+
+		// **********URL VARIABLE DESCRIPTIONS AND DEFAULTS**********
+		// The Subject ID is specified by SID variable. The default is 'testing'
+		//
+		// The default is for this program to run on the Pavlovia.org server - if you wish to run it locally, you need to define
+		// the PAV variable in the URL.  
+
+		// PAV=0 sets the program to run locally.
+		// PAV=1 sets the program to run on Pavlovia.org. This is the default
+		//
+		// The currTsk variable allows you to specify where this particular task lies in the chain of tasks you may be completing.
+		// The default value is 1. This will gain more functionality in future revisions.
+		//
+		// To control which set of words (cat A or cat B) are assigned to which hand at the beginning, you need to define the IATHAND
+		// variable in the URL.
+		// IH=wCAL sets word catecory A to start on the lefthand side of the screen. This is the default.
+		// IH=wCAR sets word catecory A to start on the righthand side of the screen.
+		//
+		// To control whether the program starts with the congruent or incongruent condition, you need to definr the IATCOND variable
+		// in the URL.
+		// IC=CONG sets the program to start with the congruent condition. This is the default.
+		// IC=INCO sets the program to start with the incongruent condition.
+		
+
+		// IAT SPECIFIC DEFINITIONS
+		var task='biat'; // set the name of the task.
+		var compCode='cvd19@accy?#4';
+		
+		var taskOrder=jsPsych.randomization.shuffle([1,2,3]);
+		// Set the catergories for sorting (note that these willl be the labels used)
+		// NOTE THE PROGRAM ASSUMES THAT wordCatA-cncptCatA and wordCatB-cncptCatB are the congruent associations.
+
+		function wArr2wStr(wArr){
+			wStr='';
+			for (i=0; i<wArr.length; i++) {
+				wStr=wStr+wArr[i]+', ';
+			};
+			wStr=wStr.slice(0,-2);
+			
+			return wStr
+		};
+		
+		// Specify the specific stimuli - relatvie paths are used for images.
+		var wordCatA='ME';
+		var catAWordList = [
+			'I',
+			'Me',
+			'Myself',
+			'Mine'
+		];
+		var catAWordString = wArr2wStr(catAWordList);
+
+		var wordCatB='THEY';
+		var catBWordList = [
+			'They',
+			'Them',
+			'Their',
+			'Theirs'
+		];
+		var catBWordString = wArr2wStr(catBWordList);
+		
+		var cncptCatA='SERVICE';
+		var cncptAList = [
+			'Compassion',
+			'Sacrifice',
+			'Duty',
+			'Give',
+			'Helping'
+		];
+		var cncptAString = wArr2wStr(cncptAList); //Change if using photos
+
+		var cncptCatB='PROFIT';
+		var cncptBList = [
+			'Gain',
+			'Win',
+			'Money',
+			'Take',
+			'Capitalize'
+		];
+		var cncptBString = wArr2wStr(cncptBList); //Change if using photos
+
+		var pr_wordCatA='GOOD';		
+		var pr_catAWordList = [
+			"Wonderful",
+			"Best",
+			"Superb",
+			"Excellent"
+		];
+		var pr_catAWordString = wArr2wStr(pr_catAWordList);
+		
+		var pr_wordCatB='BAD';
+		var pr_catBWordList = [
+			"Terrible",
+			"Awful",
+			"Worst",
+			"Horrible"
+		];
+		var pr_catBWordString = wArr2wStr(pr_catBWordList);
+				
+		var pr_cncptCatA='FLOWERS';
+		var pr_cncptAList = [
+			"Orchid",
+			"Lily",
+			"Violet",
+			"Daisy",
+		];
+		var pr_cncptAString = wArr2wStr(pr_cncptAList); //Change if using photos
+		
+		var pr_cncptCatB='INSECTS';		
+		var pr_cncptBList = [
+			"Ant",
+			"Locust",
+			"Bee",
+			"Wasp",
+		];
+		var pr_cncptBString = wArr2wStr(pr_cncptBList); //Change if using photos
+			
+		var wordCatC='GOOD';
+		var catCWordList = [
+			'Great',
+			'Terrific',
+			'Wonderful',
+			'Fabulous',
+			'Superb',
+			'Nice',
+			'Fantastic',
+			'Lovely'
+		];
+		var catCWordString = wArr2wStr(catCWordList);
+
+		var wordCatD='BAD';
+		var catDWordList = [
+			'Awful',
+			'Terrible',
+			'Horrible',
+			'Disgusting',
+			'Horrid',
+			'Foul',
+			'Revolting',
+			'Nasty'
+		];
+		var catDWordString = wArr2wStr(catDWordList);
+
+
+		var cncptCatC='White People';
+		var cncptCList = [
+			'img/White/pd_F_C_19_111_1019_TCcrp_H300_crp.png',
+			'img/White/pd_F_C_24_111_1070_AUTO_H300_crp.png',
+			'img/White/pd_F_C_27_011_1066_MANUAL_H300_crp.png',
+			'img/White/pd_F_C_BLANK_111_1001_H300_crp.png',
+			'img/White/pd_F_C_BLANK_111_1007_TC_H300_crp.png',
+			'img/White/pd_M_BLANK_22_111_1026_H300_crp.png',
+			'img/White/pd_M_C_19_111_1021_H300_crp.png',
+			'img/White/pd_M_C_19_111_1039_ALT_H300_crp.png',
+			'img/White/pd_M_C_19_111_1096_TC_AUTO_H300_crp.png',
+			'img/White/pd_M_C_20_111_1042_H300_crp.png',
+		];
+		var cncptCString = 'Pictures of '+cncptCatC+' faces.'
+		
+		var cncptCatD='Black People';
+		var cncptDList = [
+			'img/Black/pd_F_B_20_111_1011_H300_crp.png',
+			'img/Black/pd_F_B_20_111_1052_AUTO_H300_crp.png',
+			'img/Black/pd_F_B_20_111_1092_AUTO_H300_crp.png',
+			'img/Black/pd_F_B_20_111_1144_AUTO_H300_crp.png',
+			'img/Black/pd_F_B_23_111_1023_H300_crp.png',
+			'img/Black/pd_M_B_18_111_1385_AUTO_H300_crp.png',
+			'img/Black/pd_M_B_19_111_1073_AUTO_H300_crp.png',
+			'img/Black/pd_M_B_20_111_1088_TC_AUTO_H300_crp.png',
+			'img/Black/pd_M_B_20_111_1172_AUTO_H300_crp.png',
+			'img/Black/pd_M_B_21_111_1101_AUTO_H300_crp.png',
+		];
+		var cncptDString = 'Pictures of '+cncptCatD+' faces.'
+
+		var cncptCatE='Asian People';
+		var cncptEList = [
+			'img/Asian/pd_f-009-01_H300_crp.png',
+			'img/Asian/pd_f-012-01_H300_crp.png',
+			'img/Asian/pd_f-014-01_H300_crp.png',
+			'img/Asian/pd_f-015-01_H300_crp.png',
+			'img/Asian/pd_f-017-01_H300_crp.png',
+			'img/Asian/pd_m-009-01_H300_crp.png',
+			'img/Asian/pd_m-011-01_H300_crp.png',
+			'img/Asian/pd_m-012-01_H300_crp.png',
+			'img/Asian/pd_m-013-01_H300_crp.png',
+			'img/Asian/pd_m-014-01_H300_crp.png',
+		];
+		var cncptEString = 'Pictures of '+cncptCatE+' faces.'
+
+		var imgsToPreload=cncptCList.concat(cncptDList, cncptEList);
+
+		// Specify the number of trials in each block. The default is taken from Lane et al, 2007
+		var practLength=16;
+		var blockLength=20;
+
+
+		// Because of dependencies in the Instructions, I take care of url handling early on - but it shouldn't need editing
+		var urlvar = jsPsych.data.urlVariables();
+
+		// assumes followup task variables are passed in a string with following tags (*t# to indicate new task with a number, *a to indicate &, *e to indicate =)
+		if(typeof urlvar.FTV == 'undefined'){
+			var FTV="";
+		}else{
+			var FTV = urlvar.FTV;
+		};		
+		if(typeof urlvar.SID == 'undefined'){
+			var sid="testing";
+		}else{
+			var sid = urlvar.SID;
+		}
+		if(typeof urlvar.PAV == 'undefined'){
+			var pav = 1;
+		}else{
+			var pav = urlvar.PAV;
+		}
+		if(typeof urlvar.CT == 'undefined'){  //assumes currTask is in format 1o3
+			var currTsk='1';
+			var numTsks='1';			
+		}else{
+			var currTsk = urlvar.CT[0];
+			var numTsks = urlvar.CT[2];
+		};
+		if(typeof urlvar.IH == 'undefined'){
+			urlvar.IH='wCAL';
+		}
+		if(typeof urlvar.IC == 'undefined'){
+			urlvar.IC='CONG';
+		}
+
+//SET FOR CATEGORIES AB		
+		switch(urlvar.IH){
+		case "wCAL":
+			var wAhInit=['focal','nonfocal'];
+			var wLabels=[wordCatA,wordCatB];
+			var iathand=['wCAL', 'wCAR'];
+		    break;
+		case "wCAR": 
+			var wAhInit=['nonfocal','focal'];
+			var wLabels=[wordCatB,wordCatA];
+			var iathand=['wCAR', 'wCAL'];
+		    break;
+		    default: ;
+		    break;
+		};
+		switch(urlvar.IC){
+		case "CONG":
+			var cncptAhInit=[wAhInit[0],wAhInit[1]];
+			if (wAhInit[0]=='focal') {
+				var cLabels=['<span style="color:green">'+cncptCatA+'</span>','<span style="color:green">'+cncptCatB+'</span>'];
+			} else {
+				var cLabels=['<span style="color:green">'+cncptCatB+'</span>','<span style="color:green">'+cncptCatA+'</span>'];				
+			};
+			var iatcond=['CONG','INCO'];
+		    break;
+		case "INCO":
+			var cncptAhInit=[wAhInit[1],wAhInit[0]];
+			if (wAhInit[0]=='focal') {
+				var cLabels=['<span style="color:green">'+cncptCatB+'</span>','<span style="color:green">'+cncptCatA+'</span>'];
+			} else {
+				var cLabels=['<span style="color:green">'+cncptCatA+'</span>','<span style="color:green">'+cncptCatB+'</span>'];				
+			};
+			var iatcond=['INCO','CONG'];
+		    break;
+		    default: ;
+		    break;
+		};		
+	
+		var pr_wAhInit=['focal','nonfocal'];
+		var pr_wLabels=[wordCatA,wordCatB];
+		var pr_cncptAhInit=[pr_wAhInit[0],pr_wAhInit[1]];
+		var pr_cLabels=['<span style="color:green">'+pr_cncptCatA+'</span>','<span style="color:green">'+pr_cncptCatB+'</span>'];
+
+
+//SET FOR CATEGORIES CD
+		switch(urlvar.IH){
+		case "wCAL":
+			var wLabelsCD=[wordCatC,wordCatD];
+		    break;
+		case "wCAR": 
+			var wLabelsCD=[wordCatD,wordCatC];
+		    break;
+		    default: ;
+		    break;
+		};
+		switch(urlvar.IC){
+		case "CONG":
+			var cncptChInit=[wAhInit[0],wAhInit[1]];
+			if (wAhInit[0]=='focal') {
+				var cLabelsCD=['<span style="color:green">'+cncptCatC+'</span>','<span style="color:green">'+cncptCatD+'</span>'];
+			} else {
+				var cLabelsCD=['<span style="color:green">'+cncptCatD+'</span>','<span style="color:green">'+cncptCatC+'</span>'];				
+			};
+		    break;
+		case "INCO":
+			var cncptChInit=[wAhInit[1],wAhInit[0]];
+			if (wAhInit[0]=='focal') {
+				var cLabelsCD=['<span style="color:green">'+cncptCatD+'</span>','<span style="color:green">'+cncptCatC+'</span>'];
+			} else {
+				var cLabelsCD=['<span style="color:green">'+cncptCatC+'</span>','<span style="color:green">'+cncptCatD+'</span>'];				
+			};
+		    break;
+		    default: ;
+		    break;
+		};	
+
+		var pr_wAhInitCD=['focal','nonfocal'];
+		var pr_wLabelsCD=[wordCatC,wordCatD];
+		var pr_cncptAhInitCD=[pr_wAhInitCD[0],pr_wAhInitCD[1]];
+		var pr_cLabelsCD=['<span style="color:green">'+pr_cncptCatA+'</span>','<span style="color:green">'+pr_cncptCatB+'</span>'];
+
+//SET FOR CATEGORIES CE
+		switch(urlvar.IH){
+		case "wCAL":
+			var wLabelsCE=[wordCatC,wordCatD];
+		    break;
+		case "wCAR": 
+			var wLabelsCE=[wordCatD,wordCatC];
+		    break;
+		    default: ;
+		    break;
+		};
+		switch(urlvar.IC){
+		case "CONG":
+			var cncptEhInit=[wAhInit[0],wAhInit[1]];
+			if (wAhInit[0]=='focal') {
+				var cLabelsCE=['<span style="color:green">'+cncptCatC+'</span>','<span style="color:green">'+cncptCatE+'</span>'];
+			} else {
+				var cLabelsCE=['<span style="color:green">'+cncptCatE+'</span>','<span style="color:green">'+cncptCatC+'</span>'];				
+			};
+		    break;
+		case "INCO":
+			var cncptEhInit=[wAhInit[1],wAhInit[0]];
+			if (wAhInit[0]=='focal') {
+				var cLabelsCE=['<span style="color:green">'+cncptCatE+'</span>','<span style="color:green">'+cncptCatC+'</span>'];
+			} else {
+				var cLabelsCE=['<span style="color:green">'+cncptCatC+'</span>','<span style="color:green">'+cncptCatE+'</span>'];				
+			};
+		    break;
+		    default: ;
+		    break;
+		};	
+
+		var pr_wAhInitCE=['focal','nonfocal'];
+		var pr_wLabelsCE=[wordCatC,wordCatD];
+		var pr_cncptAhInitCE=[pr_wAhInitCE[0],pr_wAhInitCE[1]];
+		var pr_cLabelsCE=['<span style="color:green">'+pr_cncptCatA+'</span>','<span style="color:green">'+pr_cncptCatB+'</span>'];
+
+
+
+
+		if (taskOrder[0]==1){
+			pr_cats=[wordCatA, wordCatB, pr_cncptCatA, pr_cncptCatB];
+			pr_strs=[catAWordString, catBWordString, pr_cncptAString, pr_cncptBString];
+			pr_labels=[pr_cLabels[0], wLabels[0]];
+		} else {
+			pr_cats=[wordCatC, wordCatD, pr_cncptCatA, pr_cncptCatB];
+			pr_strs=[catCWordString, catDWordString, pr_cncptAString, pr_cncptBString];
+			pr_labels=[pr_cLabels[0], wLabelsCD[0]];
+		};
+		
+		
+
+		var welcome = { //This is the welcome block of instructions as well as the lead in to Block 1.
+			type: "instructions",
+			pages: ["<div style='text-align:left'><p>In this task, you will be presented with a set of words or images to classify into groups."+
+			" This task requires that you classify items <strong>as quickly as you can</strong> while making as few mistakes as possible."+
+			" Going too slow or making too many mistakes will result in an uninterpretable score."+
+			" This part of the study will take about 5 minutes.</div>"+
+			"<p style='text-align:center'>Press the <b>SPACEBAR</b> to begin, B to go back.</p></div>",
+		
+			"<div style='text-align:left'><p>The following is a list of category labels and "+
+			"the items that belong to each of those categories.</p>"+
+		
+			"<table border='1'><tr><td><b>Category</b></td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td><b>Items</b></td></tr>"+
+			// "<tr><td>Homeless Images:</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Pictures of individuals who are Homeless</td>"+
+			// "<tr><td>Not Homeless Images:</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Pictures of individuals who are not Homeless</td>"+
+			"<tr><td>"+pr_cats[0]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+				pr_strs[0]+
+
+			"<tr><td>"+pr_cats[1]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+				pr_strs[1]+
+
+			"<tr><td>"+pr_cats[2]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+				pr_strs[2]+
+
+			"<tr><td>"+pr_cats[3]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+				pr_strs[3]+"</table>"+
+
+			"<p>Keep in mind:</p><ul>"+
+			"<li>Keep your index fingers on the 'e' and 'i' keys to enable rapid response.</li>"+
+			"<li>Two labels at the top will tell you which words or images go with each key.</li>"+
+			"<li>Each word or image has a correct classification. Most of these are easy.</li>"+
+			"<li>The test gives no results if you go slow -- Please try to go as fast as possible.</li>"+
+			"<li>Expect to make a few mistakes because of going fast. That's OK.</li>"+
+			"<li>For best results, avoid distractions and stay focused.</li></ul></div>"+'<p>Press the SPACEBAR to continue, B to go back.</p>',
+		
+			"<div id='trial_left_align' style='position: absolute; top: 18%; margin-left: auto; margin-right: auto; left: 0; right: 0''>"+
+			"<p>Press E for:<br>"+ pr_labels[0].bold()+ "<br>" + "or<br>" +pr_labels[1].bold()+"</p></div>"+
+
+			// "<div id='trial_right_align' style='position: absolute; top: 18%; right: 20%'>"+"<p>Press I for:<br>"+
+			// wLabels[1].bold()+"</p></div>"+
+		
+			"<div style='text-align:left; position: absolute; top: 40%; left: 10%; right: 10%'>"+
+			"Put your left index finger on the <b>E</b> key and your right index finger on the <b>I</b> key of your keyboard. "+
+			"<p>Words or images representing the categories at the top of the screen will appear one-by-one in the "+
+			"middle of the screen. When an item belongs to one of the categories at the top, press the <b>E</b> "+
+			"key; when an item does not belong to one of the categories at the top, press the <b>I</b> key.  Items "+
+			"belong to only one category.  <p>If you make an error, an <font color=red>X</font> "+
+			"will appear - fix the error by hitting the other key.</p>"+
+			"<p>This is a timed sorting task. <b>GO AS FAST AS YOU CAN</b> while making as few "+
+			"mistakes as possible. Going too slow or making too many errors will result in an "+
+			"uninterpretable score. This task will take about 5 minutes to complete.</p>"+
+			"<p style='text-align:center'>Press the <b>SPACEBAR</b> to begin, B to go back.</p></div>",
+	
+			"<p style='text-align:center'>When you are ready to start the task, press the <b>SPACEBAR</b> to begin.</p>"],
+			key_forward: [32],
+			key_backward: [66],
+			on_start: function (trial){
+				if (currTsk==1 && currTsk==numTsks){
+					trial.pages.unshift("<p>Welcome to the experiment!</p><p>Please put your browser into fullscreen mode. This task "+
+					"requires your full attention, we ask that you make sure you will have no distractions over the next 5 minutes.</p>" +
+					"<p>Thank you for being a part of our research."+'<p>Press the SPACEBAR to continue</p>');
+				}else{
+					trial.pages.unshift("<p>Welcome to task "+currTsk+" of "+numTsks+"!</p><p>As a reminder, this task "+
+					"requires your full attention, we ask that you make sure you will have no distractions while completing it.</p>" +
+					// "<p><em><strong>NOTE: In some cases this task may be similar to the last. PLEASE READ ALL INSTRUCTIONS as some things will have changed</strong></em></p>"+
+					"<p>Thank you for being a part of our research."+'<p>Press the SPACEBAR to continue</p>');
+				};
+			} 
+		};
+		
+		function createB1Instrux (cats,strs,labels) {
+			var b1Instrux = {  //Specific Instructions for Block 2
+				type: "instructions",
+				pages: ["<div id='trial_left_align' style='position: absolute; top: 18%; margin-left: auto; margin-right: auto; left: 0; right: 0''>"+
+				"<p>Press E for:<br>"+
+				labels[0].bold()+ "<br>" + "or<br>" +labels[1].bold()+"</p></div>"+
+			
+				"<div style='text-align:left; position: absolute; top: 40%; left: 10%; right: 10%'>"+
+				"<p><b>See below, the categories have changed.</b>  The items for sorting have changed as well.  "+
+			
+				"<p>The following is a list of the new category labels and "+
+				"the items that belong to each of those categories.</p>"+
+			
+				"<table border='1'><tr><td><b>Category</b></td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td><b>Items</b></td></tr>"+
+				// "<tr><td>Homeless Images:</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Pictures of individuals who are Homeless</td>"+
+				// "<tr><td>Not Homeless Images:</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Pictures of individuals who are not Homeless</td>"+
+				"<tr><td>"+cats[0]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+					strs[0]+
+
+				"<tr><td>"+cats[1]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+					strs[1]+
+
+				"<tr><td>"+cats[2]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+					strs[2]+
+
+				"<tr><td>"+cats[3]+"</td>"+"<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>"+
+
+					strs[3]+"</table>"+
+			
+				"<p>The rules, however, are the same.</p><p>When an item belongs to one of the categories at the top press the <b>E</b> key; "+
+				"when an item does not belong to one of the categories at the top, press the <b>I</b> key.  "+
+				"Items belong to only one category.  An <font color=red>X</font> appears after an "+
+				"error - fix the error by hitting the other key.  <b>GO AS FAST AS YOU CAN.</b></p>"+
+				"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>"],
+				key_forward: [32],
+				key_backward: [jsPsych.NO_KEYS] 
+			};
+			return b1Instrux
+		};
+		
+		function createB234Instrux(labels){
+			var b234Instrux = {  //Specific Instructions for Block 4
+				type: "instructions",
+				pages: ["<div id='trial_left_align' style='position: absolute; top: 18%; margin-left: auto; margin-right: auto; left: 0; right: 0''>"+
+				"<p>Press E for:<br>"+
+				labels[0].bold()+ "<br>" + "or<br>" +labels[1].bold()+"</p></div>"+
+			
+				"<div style='text-align:left; position: absolute; top: 40%; left: 10%; right: 10%'>"+
+				"<p><b>See above, the categories have changed.</b>  The items for sorting have changed as well.  "+
+				"The rules, however, are the same.</p><p>When an item belongs to one of the categories at the top press the <b>E</b> key; "+
+				"when an item does not belong to one of the categories at the top, press the <b>I</b> key.  "+
+				"Items belong to only one category.  An <font color=red>X</font> appears after an "+
+				"error - fix the error by hitting the other key.  <b>GO AS FAST AS YOU CAN.</b></p>"+
+				"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>"],
+				key_forward: [32],
+				key_backward: [jsPsych.NO_KEYS] 
+			};
+			return b234Instrux
+		};
+
+		var wABcAB_B1_Instrux=createB1Instrux(
+			[wordCatA, wordCatB, cncptCatA, cncptCatB],
+			[catAWordString, catBWordString, cncptAString, cncptBString],
+			[cLabels[0], wLabels[0]],
+		);		
+		wABcAB_B24_Instrux=createB234Instrux([cLabels[1],wLabels[0]]);
+		wABcAB_B3_Instrux=createB234Instrux([cLabels[0],wLabels[0]]);
+
+		var wCDcCD_B1_Instrux=createB1Instrux(
+			[wordCatC, wordCatD, cncptCatC, cncptCatD],
+			[catCWordString, catDWordString, cncptCString, cncptDString],
+			[cLabelsCD[0], wLabelsCD[0]],
+		);		
+		wCDcCD_B24_Instrux=createB234Instrux([cLabelsCD[1],wLabelsCD[0]]);
+		wCDcCD_B3_Instrux=createB234Instrux([cLabelsCD[0],wLabelsCD[0]]);
+		
+		var wCDcCE_B1_Instrux=createB1Instrux(
+			[wordCatC, wordCatD, cncptCatC, cncptCatE],
+			[catCWordString, catDWordString, cncptCString, cncptEString],
+			[cLabelsCE[0], wLabelsCE[0]],
+		);		
+		wCDcCE_B24_Instrux=createB234Instrux([cLabelsCE[1],wLabelsCE[0]]);
+		wCDcCE_B3_Instrux=createB234Instrux([cLabelsCE[0],wLabelsCE[0]]);
+				
+		// *****************************************************************************************
+		// NOTHING BELOW THIS LINE SHOULD NEED TO BE USER DEFINED.
+		// GRAB THE URL VARIABLES
+		function makeTrialList(trialtype,stimArr,keyAssoc, trialTag) {
+			var trialList = [];
+			for (i=0; i<stimArr.length; i++){
+				trialList = trialList.concat({type: trialtype, stimulus: stimArr[i], stim_key_association: keyAssoc, trial_tag: trialTag});
+			};
+			
+			return trialList
+		};
+		function genList (catA, catB, lengthA) {
+			var list = [];
+			if (catA.length+catB.length>lengthA){
+				list = jsPsych.randomization.shuffleNoRepeats(jsPsych.randomization.shuffleNoRepeats(
+					catA).slice(0,lengthA/2).concat(jsPsych.randomization.shuffleNoRepeats(
+					catB).slice(0,lengthA/2)));			
+			} else if (catA.length+catB.length==lengthA){
+				list = jsPsych.randomization.shuffleNoRepeats(catA.concat(catB));			
+			} else {
+				var tmpAL=catA; var tmpBL=catB; 
+				while (tmpAL.length<Math.ceil(lengthA/2)) {
+					tmpAL=tmpAL.concat(jsPsych.randomization.shuffleNoRepeats(catA));
+					tmpBL=tmpBL.concat(jsPsych.randomization.shuffleNoRepeats(catB));
+				};
+				list = jsPsych.randomization.shuffleNoRepeats(tmpAL.slice(0,Math.ceil(lengthA/2)).concat(
+					tmpBL.slice(0,Math.ceil(lengthA/2))));
+			};
+			list=list.slice(0,lengthA)
+			return list;	
+		};		
+		function createBlockList (catA,catB,catA_wu,catB_wu,cncptA,cncptB,listLen){
+	   		var	wordL = genList(catA, catB, listLen/2-2);
+	   		var	cncptL = genList(cncptA, cncptB, listLen/2-2);
+			var mixL = genList(catA_wu, catB_wu,4);
+	   		var mixL = mixL.concat(cncptL.reduce(function(arr, v, i) {
+	   		                      return arr.concat(v, wordL[i]); 
+	   		                   }, []));
+			return mixL
+		};
+
+		var cncptCatATrials=makeTrialList('biat-html', cncptAList,cncptAhInit[0], 'LIVE');
+		var cncptCatBTrials=makeTrialList('biat-html', cncptBList,cncptAhInit[1], 'LIVE');
+		var cncptCatATrials2=makeTrialList('biat-html', cncptAList,cncptAhInit[1], 'LIVE');
+		var cncptCatBTrials2=makeTrialList('biat-html', cncptBList,cncptAhInit[0], 'LIVE');
+		var wCatATrials=makeTrialList('biat-html', catAWordList,wAhInit[0], 'LIVE');
+		var wCatBTrials=makeTrialList('biat-html', catBWordList,wAhInit[1], 'LIVE');
+		var wCatATrials_wu=makeTrialList('biat-html', catAWordList,wAhInit[0], 'WARMUP');
+		var wCatBTrials_wu=makeTrialList('biat-html', catBWordList,wAhInit[1], 'WARMUP');
+
+		var pr_cncptCatATrials=makeTrialList('biat-html', pr_cncptAList,pr_cncptAhInit[0], 'WARMUP');
+		var pr_cncptCatBTrials=makeTrialList('biat-html', pr_cncptBList,pr_cncptAhInit[1], 'WARMUP');
+
+		var cncptCatCTrials=makeTrialList('biat-image', cncptCList,cncptChInit[0], 'LIVE');
+		var cncptCatDTrials=makeTrialList('biat-image', cncptDList,cncptChInit[1], 'LIVE');
+		var cncptCatCTrials2=makeTrialList('biat-image', cncptCList,cncptChInit[1], 'LIVE');
+		var cncptCatDTrials2=makeTrialList('biat-image', cncptDList,cncptChInit[0], 'LIVE');
+		var wCatCTrials=makeTrialList('biat-html', catCWordList,wAhInit[0], 'LIVE');
+		var wCatDTrials=makeTrialList('biat-html', catDWordList,wAhInit[1], 'LIVE');
+		var wCatCTrials_wu=makeTrialList('biat-html', catCWordList,wAhInit[0], 'WARMUP');
+		var wCatDTrials_wu=makeTrialList('biat-html', catDWordList,wAhInit[1], 'WARMUP');
+		
+		var cncptCatETrials=makeTrialList('biat-image', cncptEList,cncptEhInit[1], 'LIVE');
+		var cncptCatETrials2=makeTrialList('biat-image', cncptEList,cncptEhInit[0], 'LIVE');
+
+		var imgsToPreload=cncptCList.concat(cncptDList,cncptEList);
+
+
+
+		
+		var pr_wABprcAB_MixL = createBlockList(wCatATrials_wu,wCatBTrials_wu,wCatATrials_wu,wCatBTrials_wu,
+			pr_cncptCatATrials,pr_cncptCatBTrials,practLength);
+		var wABcAB_B1_MixL=createBlockList(wCatATrials,wCatBTrials,wCatATrials_wu,wCatBTrials_wu,cncptCatATrials,cncptCatBTrials,blockLength);
+		var wABcAB2_B2_MixL=createBlockList(wCatATrials,wCatBTrials,wCatATrials_wu,wCatBTrials_wu,cncptCatATrials2,cncptCatBTrials2,blockLength);
+		var wABcAB_B3_MixL=createBlockList(wCatATrials,wCatBTrials,wCatATrials_wu,wCatBTrials_wu,cncptCatATrials,cncptCatBTrials,blockLength);
+		var wABcAB2_B4_MixL=createBlockList(wCatATrials,wCatBTrials,wCatATrials_wu,wCatBTrials_wu,cncptCatATrials2,cncptCatBTrials2,blockLength);
+
+		var pr_wCDprcAB_MixL = createBlockList(wCatCTrials_wu,wCatDTrials_wu,wCatCTrials_wu,wCatDTrials_wu,
+			pr_cncptCatATrials,pr_cncptCatBTrials,practLength);
+		var wCDcCD_B1_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials,cncptCatDTrials,blockLength);
+		var wCDcCD2_B2_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials2,cncptCatDTrials2,blockLength);
+		var wCDcCD_B3_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials,cncptCatDTrials,blockLength);
+		var wCDcCD2_B4_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials2,cncptCatDTrials2,blockLength);
+
+		// var pr_wCDprcAB_MixL = createBlockList(wCatCTrials_wu,wCatDTrials_wu,wCatCTrials_wu,wCatDTrials_wu,
+		// 	pr_cncptCatATrials,pr_cncptCatBTrials,practLength);
+		var wCDcCE_B1_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials,cncptCatETrials,blockLength);
+		var wCDcCE2_B2_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials2,cncptCatETrials2,blockLength);
+		var wCDcCE_B3_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials,cncptCatETrials,blockLength);
+		var wCDcCE2_B4_MixL=createBlockList(wCatCTrials,wCatDTrials,wCatCTrials_wu,wCatDTrials_wu,cncptCatCTrials2,cncptCatETrials2,blockLength);
+
+
+		//DEFINE TRIAL TYPES
+// NEED TO MAKE VARIABLE FOR WHICHEVER PRACTICE IS CHOSEN.
+		var mixedTrialAB1p = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [pr_cLabels[0],wLabels[0]],
+			nonfocal_category_label: [pr_cLabels[1],wLabels[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0]+"p", hand: iathand[0], exp_type: 'flowinsMT',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialAB1 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabels[0],wLabels[0]],
+			nonfocal_category_label: [cLabels[1],wLabels[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0], hand: iathand[0], exp_type: 'prosoc',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialAB2 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabels[1],wLabels[0]],
+			nonfocal_category_label: [cLabels[0],wLabels[1]],
+			data: { trial_type: 'wordcncptrev', condition: iatcond[1], hand: iathand[1], exp_type: 'prosoc',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+
+		var mixedTrialCD1p = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [pr_cLabelsCD[0],wLabelsCD[0]],
+			nonfocal_category_label: [pr_cLabelsCD[1],wLabelsCD[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0]+"p", hand: iathand[0], exp_type: 'flowinsGB',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialCD1 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabelsCD[0],wLabelsCD[0]],
+			nonfocal_category_label: [cLabelsCD[1],wLabelsCD[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0], hand: iathand[0], exp_type: 'bwgb',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialCD2 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabelsCD[1],wLabelsCD[0]],
+			nonfocal_category_label: [cLabelsCD[0],wLabelsCD[1]],
+			data: { trial_type: 'wordcncptrev', condition: iatcond[1], hand: iathand[1], exp_type: 'bwgb',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+		
+		
+		var mixedTrialCE1p = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [pr_cLabelsCE[0],wLabelsCD[0]],
+			nonfocal_category_label: [pr_cLabelsCE[1],wLabelsCD[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0]+"p", hand: iathand[0],  exp_type: 'flowinsGB',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialCE1 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabelsCE[0],wLabelsCD[0]],
+			nonfocal_category_label: [cLabelsCE[1],wLabelsCD[1]],
+			data: { trial_type: 'wordcncpt', condition: iatcond[0], hand: iathand[0], exp_type: 'awgb',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+
+		var mixedTrialCE2 = {
+			type: jsPsych.timelineVariable('type'),
+			stimulus: jsPsych.timelineVariable('stimulus'),
+			stim_key_association: jsPsych.timelineVariable('stim_key_association'),
+			html_when_wrong: "<span style='color: red; font-size: 80px'>X</span>",
+			bottom_instructions: '<p><strong>PRESS I FOR ANY OTHER CATEGORY</strong><p>'+
+			'<p>If you press the wrong key, a red X will appear. Press the other key to continue</p>',
+			force_correct_key_press: true,
+			display_feedback: true,
+			focal_category_key: 'E',
+			nonfocal_category_key: 'I',
+			focal_category_label: [cLabelsCE[1],wLabelsCD[0]],
+			nonfocal_category_label: [cLabelsCE[0],wLabelsCD[1]],
+			data: { trial_type: 'wordcncptrev', condition: iatcond[1], hand: iathand[1], exp_type: 'awgb',
+				stim_assoc: jsPsych.timelineVariable('stim_key_association'), trial_tag: jsPsych.timelineVariable('trial_tag')}
+		};
+		
+
+
+		var block_pr_wABprcAB = {
+			timeline: [mixedTrialAB1p],
+		  	timeline_variables: pr_wABprcAB_MixL
+		};
+
+		var block_wABcAB_B1 = {
+			timeline: [mixedTrialAB1],
+		  	timeline_variables: wABcAB_B1_MixL
+		};
+
+		var block_wABcAB2_B2 = {
+			timeline: [mixedTrialAB2],
+		  	timeline_variables: wABcAB2_B2_MixL
+		};
+		var block_wABcAB_B3 = {
+			timeline: [mixedTrialAB1],
+		  	timeline_variables: wABcAB_B3_MixL
+		};
+
+		var block_wABcAB2_B4 = {
+			timeline: [mixedTrialAB2],
+		  	timeline_variables: wABcAB2_B4_MixL
+		};
+
+		var block_pr_wCDprcAB = {
+			timeline: [mixedTrialCD1p],
+		  	timeline_variables: pr_wCDprcAB_MixL
+		};
+
+		var block_wCDcCD_B1 = {
+			timeline: [mixedTrialCD1],
+		  	timeline_variables: wCDcCD_B1_MixL
+		};
+
+		var block_wCDcCD2_B2 = {
+			timeline: [mixedTrialCD2],
+		  	timeline_variables: wCDcCD2_B2_MixL
+		};
+		var block_wCDcCD_B3 = {
+			timeline: [mixedTrialCD1],
+		  	timeline_variables: wCDcCD_B3_MixL
+		};
+
+		var block_wCDcCD2_B4 = {
+			timeline: [mixedTrialCD2],
+		  	timeline_variables: wCDcCD2_B4_MixL
+		};
+
+		var block_wCDcCE_B1 = {
+			timeline: [mixedTrialCE1],
+		  	timeline_variables: wCDcCE_B1_MixL
+		};
+
+		var block_wCDcCE2_B2 = {
+			timeline: [mixedTrialCE2],
+		  	timeline_variables: wCDcCE2_B2_MixL
+		};
+		var block_wCDcCE_B3 = {
+			timeline: [mixedTrialCE1],
+		  	timeline_variables: wCDcCE_B3_MixL
+		};
+
+		var block_wCDcCE2_B4 = {
+			timeline: [mixedTrialCE2],
+		  	timeline_variables: wCDcCE2_B4_MixL
+		};
+
+				
+		var wrap_up_block = {
+			type: "html-keyboard-response",
+			stimulus: "",
+			choices: [jsPsych.NO_KEYS],
+			on_start: function() {
+				start_time = jsPsych.startTime(); //displayed in Greenwich Mean Time
+				total_time = jsPsych.totalTime(); //displayed in milliseconds
+				// var congpRT=jsPsych.data.get().filter({condition:'CONGp'}).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').mean();
+				// var congRT=jsPsych.data.get().filter({condition:'CONG'}).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').mean();
+				// var incopRT=jsPsych.data.get().filter({condition:'INCOp'}).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').mean();
+				// var incoRT=jsPsych.data.get().filter({condition:'INCO'}).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').mean();
+				// var p_std=jsPsych.data.get().filter([{condition:'CONGp'},{condition:'INCOp'}]).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').sd();
+				// var std=jsPsych.data.get().filter([{condition:'CONG'},{condition:'INCO'}]).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').sd();
+				// var p_std_ct=jsPsych.data.get().filter([{condition:'CONGp'},{condition:'INCOp'}]).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').count();
+				// var std_ct=jsPsych.data.get().filter([{condition:'CONG'},{condition:'INCO'}]).filterCustom(function(trial){return trial.rt>300&&trial.rt<10000}).select('frt').count();
+				// var bad_rt_ct=jsPsych.data.get().filterCustom(function(trial){return trial.correct==true||trial.correct==false}).filterCustom(function(trial){return trial.rt<300}).select('frt').count();
+				//
+				// p_std=Math.sqrt((Math.pow(p_std,2)*p_std_ct)/(p_std_ct-1));
+				// std=Math.sqrt((Math.pow(std,2)*std_ct)/(std_ct-1));
+				// congpRT=Math.round(congpRT*1000)/1000;
+				// incopRT=Math.round(incopRT*1000)/1000;
+				// congRT=Math.round(congRT*1000)/1000;
+				// incoRT=Math.round(incoRT*1000)/1000;
+				// p_std=Math.round(p_std*1000)/1000;
+				// std=Math.round(std*1000)/1000;
+				// if (bad_rt_ct>=20){
+				// 	var IAT_D = NaN;
+				// }else{
+				// 	var IAT_D = ((incopRT-congpRT)/p_std+(incoRT-congRT)/std)/2;
+				// }
+				jsPsych.data.get().addToAll({subject_id: sid, task: task, iatcond: iatcond, iathand: iathand, startTime: start_time, totalTime: total_time});//, iatd: IAT_D});
+				if(pav == 0){
+					let date = new Date();
+					let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
+					dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2);
+
+					jsPsych.data.get().localSave('csv', task + '_' + sid + '_' + dateString + '.csv');
+				};
+			},
+			trial_duration: 500
+		};
+				
+
+	    var display_data_block = {
+			type: "instructions",
+		  	pages: ["<p>Thank you for completing task "+currTsk+" out of "+numTsks+"!</p>"],
+			on_start: function (trial){
+				if (currTsk<numTsks){
+					trial.pages[0] += "<p><em>Please press the enter key to proceed to the next task</em></p>";
+				} else{
+			trial.pages[0] += "<style>* {cursor:auto}</style><p><em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+						"field of the survey that you were completing before you started the tasks, and then complete the survey "+
+						"(you can close this window at this time)</em></p>";
+					trial.key_forward=[jsPsych.NO_KEYS];
+				};			
+			},
+			key_forward: [13]
+	    };
+		
+	    var save_data_block = {
+	    	type: "html-keyboard-response",
+	    	stimulus: "SAVING DATA - PLEASE WAIT FOR 5 SECONDS",
+	    	trial_duration: 5000,
+	    	response_ends_trial: false,
+	    	key_forward: [jsPsych.NO_KEYS]
+	    };
+		
+	    function goToNextTask(FTV){
+			var NTV = FTV.split('*t')[1];
+			if ((FTV.match(/\*t/g) || []).length > 1){
+				FTV = FTV.slice(FTV.indexOf('*t',1));
+			}else{
+				FTV = [];
+			};
+			var ntNUM=NTV.split('*a')[0][0];
+			var ntPath=NTV.split('*a')[0].slice(1);			
+			var ntVAR=NTV.slice(NTV.indexOf('*a')).replace(/\*a/g,'&').replace(/\*e/g,'=');
+			var currLoc = window.location.href.split('?')[0];
+			if (currLoc.slice(-5)==".html" || currLoc.slice(-1)=="/"){
+				parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-2,-1)[0]));
+			}else {
+				parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-1)[0]))
+			}
+			
+			var NEXTURL = parLoc + ntPath + ".html" + "?SID=" + sid + "&PAV=" + pav + "&CT=" + (parseInt(currTsk,10)+1) + "o" + numTsks + ntVAR + "&FTV=" + FTV;
+			
+	    	window.location = NEXTURL;
+	    };
+					
+		var timeline = [];
+	   
+	    if(pav == 1){
+	    // /* init connection with pavlovia.org */
+	  	  var pavlovia_init = {
+	  	  	type: "pavlovia",
+	  	  	command: "init"
+	  	  };
+	  	  timeline.push(pavlovia_init);
+	    };
+
+		timeline.push(welcome);
+		if (taskOrder[0]==1){
+			timeline.push(block_pr_wABprcAB);			
+		} else {
+			timeline.push(block_pr_wCDprcAB);						
+		};
+		
+		for (i=0; i<taskOrder.length; i++) {
+			if (taskOrder[i]==1){
+				timeline.push(wABcAB_B1_Instrux);
+				timeline.push(block_wABcAB_B1);
+				timeline.push(wABcAB_B24_Instrux);
+				timeline.push(block_wABcAB2_B2);
+				timeline.push(wABcAB_B3_Instrux);
+				timeline.push(block_wABcAB_B3);
+				timeline.push(wABcAB_B24_Instrux);
+				timeline.push(block_wABcAB2_B4);
+			};
+			if (taskOrder[i]==2){
+				timeline.push(wCDcCD_B1_Instrux);
+				timeline.push(block_wCDcCD_B1);
+				timeline.push(wCDcCD_B24_Instrux);
+				timeline.push(block_wCDcCD2_B2);
+				timeline.push(wCDcCD_B3_Instrux);
+				timeline.push(block_wCDcCD_B3);
+				timeline.push(wCDcCD_B24_Instrux);
+				timeline.push(block_wCDcCD2_B4);
+			};
+			if (taskOrder[i]==3){
+				timeline.push(wCDcCE_B1_Instrux);
+				timeline.push(block_wCDcCE_B1);
+				timeline.push(wCDcCE_B24_Instrux);
+				timeline.push(block_wCDcCE2_B2);
+				timeline.push(wCDcCE_B3_Instrux);
+				timeline.push(block_wCDcCE_B3);
+				timeline.push(wCDcCE_B24_Instrux);
+				timeline.push(block_wCDcCE2_B4);
+			};
+		};
+
+		timeline.push(wrap_up_block);
+	    /* finish connection with pavlovia.org */
+	    if(pav == 1){
+		  	var pavlovia_finish = {
+		  		type: "pavlovia",
+		      	command: "finish",
+				participantId: 'WEEK4_'+sid
+		    	};
+	    	timeline.push(pavlovia_finish);
+	    	timeline.push(save_data_block);
+		};
+		timeline.push(display_data_block);
+	
+
+	   
+		jsPsych.init({
+			timeline: timeline,
+            preload_images: imgsToPreload,
+		    on_interaction_data_update: function(data) {
+		      // console.log(data.event)
+				// jsPsych.data.addDataToLastTrial({browInt:JSON.stringify(data)})
+				if (data.event=='blur'){
+					data.trial_type='blurevent';
+					jsPsych.data.get().push(data);
+				} else if (data.event=='focus'){
+					data.trial_type='focusevent';
+					jsPsych.data.get().push(data);
+				} else if (data.event=='fullscreenenter'){
+					fullscreenFlag=1;
+					data.trial_type='fullscreenenter';
+					jsPsych.data.get().push(data);
+				} else if (data.event=='fullscreenexit'){
+					fullscreenFlag=0;
+					data.trial_type='fullscreenexit';
+					jsPsych.data.get().push(data);
+				};				
+			},	
+			on_finish: function() {
+			 if (FTV.length>0){
+				 goToNextTask(FTV);
+			 };
+			 }
+		});
+	</script>
+</html>

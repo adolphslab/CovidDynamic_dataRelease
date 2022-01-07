@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>cvd_altt</title>
+    <script src="jspsych-6.0.5/jspsych.js"></script>
+    <script src="jspsych-6.0.5/seedrandom/seedrandom.min.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-image-keyboard-response.js"></script>
+	<script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+    <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="lib/jspsych-pavlovia-3.1.0.js"></script>
+	<script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+  </head>
+  <style>
+	  .container {
+	    position: relative;
+	    text-align: center;
+	    color: black;
+	  }
+	  .centered {
+	    position: absolute;
+	    top: 80px;
+	    left: 50%;
+	    transform: translate(-50%, -50%);
+	  }
+  </style>
+  <body></body>
+  <script>
+	  
+	  /*task variables*/
+	  var task = "cvd_altt"; //altruism task
+	  var compCode='cvd19@accy!#3';
+	  var urlvar = jsPsych.data.urlVariables();
+	  
+	  
+	  
+	  // assumes followup task variables are passed in a string with following tags (*t# to indicate new task with a number, *a to indicate &, *e to indicate =)
+	  if(typeof urlvar.FTV == 'undefined'){
+	  	var FTV="";
+	  }else{
+	  	var FTV = urlvar.FTV;
+	  };		
+	  if(typeof urlvar.SID == 'undefined'){
+	  	var sid="testing";
+	  }else{
+	  	var sid = urlvar.SID;
+	  };
+	  if(typeof urlvar.PAV == 'undefined'){
+	  	var pav = 1;
+	  }else{
+	  	var pav = urlvar.PAV;
+	  };
+	  if(typeof urlvar.CT == 'undefined'){  //assumes currTask is in format 1o3
+	  	var currTsk='1';
+	  	var numTsks='1';			
+	  }else{
+	  	var currTsk = urlvar.CT[0];
+	  	var numTsks = urlvar.CT[2];
+	  };  
+	  
+	  
+  /*resp randomization*/
+ 	   var seed = new Date();	
+     Math.seedrandom(seed);
+  var resp_cond = jsPsych.randomization.sampleWithReplacement([1,2],1);
+  
+  var lastresp=0;
+  if (resp_cond==1){
+	  /* response keys*/
+	  // equal resp on the left
+	  var equal_resp = ["Z",'z'];
+	  var inst_equal = "Z";
+	  var unequal_resp = ["M",'m']; 
+	  var inst_unequal = "M";	  
+  } else if (resp_cond ==2){
+	  /* response keys*/	  
+	  // equal resp on the right
+	  var equal_resp = ["M",'m']; 
+	  var inst_equal = "M";
+	  var unequal_resp = ["Z",'z'];
+	  var inst_unequal = "Z";
+	  
+  }
+	  
+	  /*response buttons images*/
+  if (resp_cond == 1){
+	  var resp_generous='imgs/generous_resp_eqLeft.png';
+	  var resp_selfish='imgs/selfish_resp_eqLeft.png';
+	  var resp_selfish_missed='imgs/selfish_resp_missed.png';
+	  var resp_generous_missed='imgs/generous_resp_missed.png';
+	  var resp_generous_generous_chosen='imgs/generous_resp_generous_choice_eqLeft.png';
+	  var resp_selfish_selfish_chosen='imgs/selfish_resp_selfish_choice_eqLeft.png';
+	  var resp_generous_equal_chosen='imgs/generous_resp_equal_choice_eqLeft.png';
+	  var resp_selfish_equal_chosen='imgs/selfish_resp_equal_choice_eqLeft.png';
+	  var inst1 = 'imgs/instruction1_eqLeft.png';
+	  var inst2 = 'imgs/instruction2_eqLeft.png';
+  } else if (resp_cond ==2){
+	  var resp_generous='imgs/generous_resp_eqRight.png';
+	  var resp_selfish='imgs/selfish_resp_eqRight.png';
+	  var resp_selfish_missed='imgs/selfish_resp_missed.png';
+	  var resp_generous_missed='imgs/generous_resp_missed.png';
+	  var resp_generous_generous_chosen='imgs/generous_resp_generous_choice_eqRight.png';
+	  var resp_selfish_selfish_chosen='imgs/selfish_resp_selfish_choice_eqRight.png';
+	  var resp_generous_equal_chosen='imgs/generous_resp_equal_choice_eqRight.png';
+	  var resp_selfish_equal_chosen='imgs/selfish_resp_equal_choice_eqRight.png';
+	  var inst1 = 'imgs/instruction1_eqRight.png';
+	  var inst2 = 'imgs/instruction2_eqRight.png';
+  }
+	  var inst3 = 'imgs/avatar_neut.png';
+	  var avatar_icon = 'imgs/avatar_neut.png';
+	  var imgsToPreload_instruct = [];
+	  var imgsToPreload=[inst1, inst2, inst3,resp_generous, resp_selfish, resp_generous_generous_chosen, resp_selfish_selfish_chosen, resp_generous_equal_chosen, resp_selfish_equal_chosen];
+	  
+
+    /* welcome and instructions */
+    var instructions = {
+      type: "instructions",
+      pages: ["<p><strong>Welcome to the experiment! This is task "+currTsk+" out of "+numTsks+" and will take about 5 minutes to complete."+
+		"</strong></p> <h3 style='color:TOMATO'>PLEASE READ ALL INSTRUCTIONS CAREFULLY!</h3>"+
+		"</strong></p> <h3 style='color:TOMATO'>PLEASE MAXIMIZE THE BROWSER WINDOW FOR PROPPER DISPLAY!</h3>"+
+		"<p><em>Press the SPACEBAR to continue.</em></p>",
+
+		"<p>In this task, you will be making monetary decisions for yourself and for other participants."+
+		"<br>In the same way, all other participants choose for themselves and others. The choices that you and the other participants make will"+
+		" affect how much you, and they, will receive in this task.</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+	
+		"<p>On each round, you will decide whether to share a number of tokens <strong>equally</strong> or"+
+		" <strong>unequally</strong> with another randomly selected participant. "+
+		"Unequal shares can either mean more tokens for you and less for "+
+		"the other participant, or more tokens for the other participant and less for you.</p>"+
+		"<p>Each round you will interact with a different participant and the choices will vary - so pay attention!</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>Each week, one round out of all the rounds you play will be randomly selected to actually happen."+
+		" The number of tokens you assigned to yourself and the other participant on this randomly selected round will serve as "+
+		"lottery tickets to a monthly lottery. The prizes in this lottery are $50 Amazon gift cards. "+
+		"The more lottery tickets each participant has in the lottery, the higher their chances of winning a $50 gift card.</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>On each round you will be presented with two options, <strong>equal</strong> and <strong>unequal</strong>. "+
+		"You can select the <strong>equal</strong> share by pressing the letter <strong>'"+inst_equal+"'</strong> on your keyboard, "+
+		"and the <strong>unequal</strong> share by pressing the letter <strong>'"+inst_unequal+"'</strong>"+
+		"<p><img src="+inst1+" width=400px></img></p> <p>In the example above, <strong>'unequal'</strong> means a "+
+		"<strong>larger share for you</strong> and a <strong>smaller share for the other participant</strong>.</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>In this second example, <strong>'unequal'</strong> means a <strong>smaller share for you</strong> and a "+
+		"<strong>larger share for the other participant</strong>.<p><img src="+inst2+" width=400px></img></p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>On each round you can only choose between <strong>equal</strong> or <strong>unequal</strong> shares."+
+		"<p>But, on some rounds unequal means more for you, and on other rounds unequal means more for the other participant."+
+		"<p>So remember to be attentive about this on every round!"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p><strong>Your choices affect how many tokens you and the other participants will receive!</strong></p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>" ,
+		
+		"<p>Based on the information we collected during in the first session of the current study we created short profiles "+
+		"of every participant. The profiles contain information about each participant's occupation (current or previous if retired/unemployed),"+
+		" age, race or ethnicity, and political affiliation.<br>During the course of the task you will be introduced to a "+
+		"number of different participants. In the following weeks you will continue to make decisions for the same participants."+
+		"<br>To help you make your decision we show you the profiles of the participants you are choosing for.<br>An example is shown bellow."+
+		"<br ><div class='container'><img src="+inst3+" style='width:20%;'><div class='centered'><br><strong>teacher"+
+		"<br>29 years old<br>hispanic<br>republican</strong></div></div>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>" ,
+		
+		"<p style='text-align: left'><strong>SUMMARY</strong>"+
+		"<ul style='text-align: left'>"+
+		"<li>On each round you will decide to share tokens, either <strong>equally</strong> or <strong>unequally</strong>, with another participant."+
+		"<li>You can select the <strong>equal</strong> share by pressing the letter <strong>'"+inst_equal+"'</strong> and the "+
+		"<strong>unequal</strong> share by pressing the letter <strong>'"+inst_unequal+"'</strong>."+
+		"<li>On some rounds unequal means <strong>more for you</strong>, on other rounds unequal means <strong>more for the other participant</strong>."+
+		"<li>To help you get to know your partners, we will provide you with some information about who they are."+
+		"<li>The tokens that you collect through your decisions and the tokens that you give to other participants through your "+
+		"choices serve as tickets for a monthly lottery.</ul>"+
+		"<p style='text-align: center'>When you are ready to start the task, press the spacebar.<em><br>"+
+		"<br>Press SPACEBAR to start the task, B to go back to the previous screen</em></p></div>"],
+		
+		
+    post_trial_gap: 2000,
+	key_forward: [32],
+	key_backward: [66],
+	data: {trial_tag: "instructions",}
+    };
+	
+  	
+	
+  /* receiver paramaters: age, race and political affiliation */
+  var occupation=[
+	  "Hairdresser","Advertising Salesperson","Landscaper","Travel Agent","Real Estate Broker","Executive Secretary","Data Entry","Interior Designer","Accountant","Personal Financial Advisor","Architect","Paralegal","Lawyer","Tree Trimmer","Barber","Movie Usher","Resort Desk Clerk","Web Developer","Shoe Salesperson","Engineer","Train Attendant","Social Worker","Mail Carrier","Police Officer","Subway Operator","Food Delivery Driver","Fire Fighter","Farmer","Pharmacist","Physical Therapist","Paramedic","Internist","Garbage Collector","Security Guard","Supermarket Cashier","Fast Food Cook","Midwife" , "Personal Home Aide","Nurse"];
+
+	  
+  var youngAge = [
+  	"25 years old",
+  	"26 years old",
+  	"27 years old",
+  	"28 years old",
+  	"29 years old",
+  	"30 years old",
+  	"31 years old",
+  	"32 years old",
+  	"33 years old",
+  	"34 years old",
+  	"35 years old",
+  	"36 years old",
+  	"37 years old",
+  	"38 years old",
+  	"39 years old",
+  	"40 years old",
+  	"41 years old",
+  	"42 years old",
+  ];
+  var oldAge = [
+  	"58 years old",
+  	"59 years old",
+  	"60 years old",
+  	"61 years old",
+  	"62 years old",
+  	"63 years old",
+  	"64 years old",
+  	"65 years old",
+  	"66 years old",
+  	"67 years old",
+  	"68 years old",
+  	"69 years old",
+  	"70 years old",
+  	"71 years old",
+  	"72 years old",
+  	"73 years old",
+  	"74 years old",
+  	"75 years old",
+  ];
+  
+  // set random seed to create the same set of receivers every time the subject returns
+  Math.seedrandom(sid);
+  
+  youngAge = jsPsych.randomization.sampleWithReplacement(youngAge,12);
+  oldAge = jsPsych.randomization.sampleWithReplacement(oldAge,12);
+  var age = new Array(48);
+  var ageIdent = new Array(48);
+  for (r=0;r<2;r++){
+		 j = 0;
+		 if (r==0){
+			 start_i =0;
+			 end_i =24;
+		 }else{
+			 start_i=24;
+			 end_i=48;
+		 }
+		 for (i=start_i;i<end_i;i=i+2){
+			 age[i] = youngAge[j];
+			 ageIdent[i] = "young";
+			 age[i+1] = oldAge[j];
+			 ageIdent[i+1] = "old";
+		   j++;
+		 }
+ 	}
+	// occupation
+	occupation = jsPsych.randomization.sampleWithoutReplacement(occupation,24);
+	occupation = Array(2).fill(occupation).flat();
+	// race ethnicity
+	var race1 = new Array(2).fill(["Black"]).flat();
+	var race2 = new Array(2).fill(["White"]).flat();
+	var race3 = new Array(2).fill(["Asian"]).flat();
+	var race4 = new Array(2).fill(["Hispanic"]).flat();
+	var race = race1.concat(race2);
+	race = race.concat(race3);
+	race= race.concat(race4);
+	race = new Array(6).fill(race).flat();
+	// political identity
+	var polit1 = new Array(8).fill(["Democrat"]).flat();
+	var polit2 = new Array(8).fill(["Republican"]).flat();
+	var polit3 = new Array(8).fill(["Independent"]).flat();
+	var polit = polit1.concat(polit2);
+	polit = polit.concat(polit3);
+	polit = new Array(2).fill(polit).flat();
+	// choice type
+  	var choice_typ1 = new Array(24).fill(["generous"]).flat();
+  	var choice_typ2 = new Array(24).fill(["selfish"]).flat();
+  	var choice_type = choice_typ1.concat(choice_typ2);
+	
+  /* define test stimuli*/
+  var test_stimuli =[];
+  for (i=0;i<48;i++){
+	  if (choice_type[i] == "generous"){
+	  	choice_button = resp_generous
+	  } 
+	  else {choice_button = resp_selfish
+  }
+	  
+	  test_stimuli.push({avatar:avatar_icon, race: race[i], polit: polit[i], age: age[i], ageIdent: ageIdent[i], choice_button: choice_button, choice_type: choice_type[i], occupation: occupation[i]});	  
+	  }
+
+	/*inter trial interval*/
+    var ITI = {
+      type: 'html-keyboard-response',
+      stimulus: '',
+      choices: jsPsych.NO_KEYS,
+      trial_duration: 500,
+	  data: {trial_tag: "ITI",}
+    }
+
+	
+	/*choice*/
+    var response = {
+			type: 'html-keyboard-response',
+			stimulus: "",
+			prompt:"",
+           	choices: [equal_resp[0],equal_resp[1], unequal_resp[0], unequal_resp[1]],
+		data: {
+				occupation: jsPsych.timelineVariable('occupation'), 
+				race: jsPsych.timelineVariable('race'), 
+				polit_ident: jsPsych.timelineVariable('polit'), 
+				age: jsPsych.timelineVariable('age'), 
+				ageIdent: jsPsych.timelineVariable('ageIdent'), 
+				choice_type: jsPsych.timelineVariable('choice_type'), 
+				trial_tag: "response",
+				equal_resp: equal_resp,
+				unequal_resp: unequal_resp,
+			
+			},
+				on_start: function (trial) {
+					trial.stimulus = "<br><br>The receiver of your choice is:<br ><div class='container'><img src="+avatar_icon+" style='width:20%;'><div class='centered'><br><strong>"+jsPsych.timelineVariable('occupation', true)+"<br>"+jsPsych.timelineVariable('age', true)+"<br>"+jsPsych.timelineVariable('race', true)+"<br>"+jsPsych.timelineVariable('polit', true)+"</strong></div></div>";
+					trial.prompt="<p>Choose between:</p><p><img src='"+jsPsych.timelineVariable('choice_button', true)+"' class='respPic, 'width=400></p>";
+				},
+				on_finish: function (trial){
+					trial.key_press = String.fromCharCode(trial.key_press);
+					if (trial.rt!=null){lastresp=trial.key_press;
+					} else {lastresp=0;};										
+				}
+    }
+	
+	
+	
+	/*choice feedback*/
+    var responseFB = {
+			type: 'html-keyboard-response',
+			stimulus: "",
+			prompt:"",
+           	choices: jsPsych.NO_KEYS,
+           	trial_duration: 500,   		
+			data: {
+				occupation: jsPsych.timelineVariable('occupation'), 
+				race: jsPsych.timelineVariable('race'), 
+				age: jsPsych.timelineVariable('age'), 
+				polit_ident: jsPsych.timelineVariable('polit'), 
+				ageIdent: jsPsych.timelineVariable('ageIdent'), 
+				choice_type: jsPsych.timelineVariable('choice_type'), 
+				trial_tag: "responseFB",
+			},
+			on_start: function (trial) {
+				var feedback_button=[];
+
+				if (jsPsych.timelineVariable('choice_type',true)=="generous"){					
+					if (lastresp == equal_resp[0] || lastresp == equal_resp[1]){feedback_button = resp_generous_equal_chosen;}
+					else if (lastresp == unequal_resp[0] || lastresp == unequal_resp[1]){feedback_button = resp_generous_generous_chosen;}
+					else {feedback_button = resp_generous_missed;}
+				} else{					
+					if (lastresp == equal_resp[0] || lastresp == equal_resp[1]){feedback_button = resp_selfish_equal_chosen;}
+					else if(lastresp == unequal_resp[0] || lastresp == unequal_resp[1]){feedback_button = resp_selfish_selfish_chosen;}
+					else  {feedback_button = resp_selfish_missed;}
+				}
+					
+					trial.stimulus = "<br><br>The receiver of your choice is:<br ><div class='container'><img src="+avatar_icon+" style='width:20%;'><div class='centered'><br><strong>"+jsPsych.timelineVariable('occupation', true)+"<br>"+jsPsych.timelineVariable('age', true)+"<br>"+jsPsych.timelineVariable('race', true)+"<br>"+jsPsych.timelineVariable('polit', true)+"</strong></div></div>";
+					trial.prompt="<p>Choose between:</p><p><img src='"+feedback_button+"' class='respPic, 'width=400></p>";
+				}
+    }
+	
+
+	
+	// reset random seed to create random trial sequence
+	var date = new Date();
+	var seed = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_'+('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2);	
+    Math.seedrandom(seed);
+	
+	/*test trial*/
+    var test_procedure = {
+     timeline: [ITI, response, responseFB],
+     timeline_variables: test_stimuli,
+     randomize_order: true
+    }
+		
+	
+	/* wrap up , save data*/ 
+	var wrap_up_block = {
+		type: "html-keyboard-response",
+		stimulus: "",
+		choices: [jsPsych.NO_KEYS],
+		on_start: function() {
+			start_time = jsPsych.startTime(); //displayed in Greenwich Mean Time
+			total_time = jsPsych.totalTime(); //displayed in milliseconds
+			jsPsych.data.get().addToAll({subject_id: sid, task: task, startTime: start_time, totalTime: total_time});
+			if (pav == 0){
+				let date = new Date();
+				let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
+				dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2);		
+				jsPsych.data.get().localSave('csv', task + '_' + sid + '_' + dateString + '.csv');
+			}
+		},
+		trial_duration: 500
+	};
+	
+	var display_data_block = {
+		type: "instructions",
+		pages: ["<p>Thank you for completing task "+currTsk+" out of "+numTsks+"!</p>"],
+		on_start: function (trial){
+			if (currTsk<numTsks){
+				trial.pages[0] += "<p><em>Please press the enter key to proceed to the next task</em></p>";
+			} else{
+				trial.pages[0] += "<style>* {cursor:auto}</style><p><em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+					"field of the survey that you were completing before you started the tasks, and then complete the survey "+
+					"(you can close this window at this time)</em></p>";
+				trial.key_forward=[jsPsych.NO_KEYS];
+			};
+
+		},
+		key_forward: [13]
+	};
+	
+	var save_data_block = {
+		type: "html-keyboard-response",
+		stimulus: "SAVING DATA - PLEASE HOLD FOR 5 SECONDS",
+		trial_duration: 5000,
+		response_ends_trial: false,
+		key_forward: [jsPsych.NO_KEYS]
+	};
+	
+    function goToNextTask(FTV){
+		var NTV = FTV.split('*t')[1];
+		if ((FTV.match(/\*t/g) || []).length > 1){
+			FTV = FTV.slice(FTV.indexOf('*t',1));
+		}else{
+			FTV = [];
+		};
+		var ntNUM=NTV.split('*a')[0][0];
+		var ntPath=NTV.split('*a')[0].slice(1);			
+		var ntVAR=NTV.slice(NTV.indexOf('*a')).replace(/\*a/g,'&').replace(/\*e/g,'=');
+		var currLoc = window.location.href.split('?')[0];
+		if (currLoc.slice(-5)==".html" || currLoc.slice(-1)=="/"){
+			parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-2,-1)[0]));
+		}else {
+			parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-1)[0]))
+		}
+		
+		var NEXTURL = parLoc + ntPath + ".html" + "?SID=" + sid + "&PAV=" + pav + "&CT=" + (parseInt(currTsk,10)+1) + "o" + numTsks + ntVAR + "&FTV=" + FTV;
+		
+    	window.location = NEXTURL;
+    };
+	
+	
+    var experiment=[];
+    if(pav == 0){
+    /* init connection with pavlovia.org */
+    	var pavlovia_init = {
+    		type: "pavlovia",
+    		command: "init"
+    	};
+    	experiment.push(pavlovia_init);
+    };
+  
+    experiment.push(instructions);
+	experiment.push(test_procedure);
+    experiment.push(wrap_up_block);
+    if(pav == 1){
+    	var pavlovia_finish = {
+    		type: "pavlovia",
+			command: "finish",
+			participantId: 'WEEK3_'+sid
+      	};
+	    experiment.push(pavlovia_finish);
+	  	experiment.push(save_data_block);
+    };  
+    experiment.push(display_data_block);
+	
+   
+
+    /* start the experiment */
+    jsPsych.init({
+		timeline: experiment,
+        preload_images: imgsToPreload,
+		
+		on_interaction_data_update: function(data) {
+		  // console.log(data.event)
+			// jsPsych.data.addDataToLastTrial({browInt:JSON.stringify(data)})
+			if (data.event=='blur'){
+				data.trial_tag='blurevent';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='focus'){
+				data.trial_tag='focusevent';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='fullscreenenter'){
+				fullscreenFlag=1;
+				data.trial_tag='fullscreenenter';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='fullscreenexit'){
+				fullscreenFlag=0;
+				data.trial_tag='fullscreenexit';
+				jsPsych.data.get().push(data);
+			};				
+		},	
+  
+		on_finish: function() {
+				if (FTV.length>0){
+					goToNextTask(FTV);
+				};
+			}
+    });
+	
+	
+  </script>
+  </html>

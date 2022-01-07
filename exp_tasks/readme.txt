@@ -1,1 +1,1 @@
-Tasks
+The Covid-Dynamic study includes 6 experimental tasks 

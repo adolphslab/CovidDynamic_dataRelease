@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>cvd_pgg</title>
+    <script src="jspsych-6.0.5/jspsych.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-image-keyboard-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-image-button-response.js"></script>
+    <script src="jspsych-6.0.5/plugins/jspsych-survey-text.js"></script>
+	<script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+    <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="lib/jspsych-pavlovia-3.1.0.js"></script>
+	<script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+	
+	
+    <style>
+      img {
+        width: 400px;
+  	  align: center;
+      }
+    </style>
+  </head>
+  <body></body>
+  <script>
+	  
+	  
+	  
+	  /*task variables*/
+	  var task = "cvd_pgg"; // public goods game
+	  var compCode='cvd19@accy%!9';
+	  
+	  var urlvar = jsPsych.data.urlVariables();
+	  
+	  // assumes followup task variables are passed in a string with following tags (*t# to indicate new task with a number, *a to indicate &, *e to indicate =)
+	  if(typeof urlvar.FTV == 'undefined'){
+	  	var FTV="";
+	  }else{
+	  	var FTV = urlvar.FTV;
+	  };		
+	  if(typeof urlvar.SID == 'undefined'){
+	  	var sid="testing";
+	  }else{
+	  	var sid = urlvar.SID;
+	  };
+	  if(typeof urlvar.PAV == 'undefined'){
+	  	var pav = 1;
+	  }else{
+	  	var pav = urlvar.PAV;
+	  };
+	  if(typeof urlvar.CT == 'undefined'){  //assumes currTask is in format 1o3
+	  	var currTsk='1';
+	  	var numTsks='1';			
+	  }else{
+	  	var currTsk = urlvar.CT[0];
+	  	var numTsks = urlvar.CT[2];
+	  };  
+	  
+	  
+	  /* images*/
+	   
+	  var inst1 = 'imgs/PG_inst1_free.png';
+	  var inst2 = 'imgs/PG_inst2_free.png';
+	  var inst3 = 'imgs/PG_inst3_free.png';
+	  var inst4 = 'imgs/PG_inst4_free.png';
+	  var inst5 = 'imgs/PG_inst5_free.png';
+	  var inst6 = 'imgs/PG_inst7_free.png';
+	  var pg_choice = 'imgs/PG_choice_free.png';
+	  //var lastWeekResult = 'FBimgs_wave7/cvd_pggFB_wave6_testing.png';
+	  var lastWeekResult = 'FBimgs_wave9/cvd_pggFB_w8_'+sid+'.png';
+	  var imgsToPreload = [inst1, inst2, inst3, inst4, inst5, inst6, pg_choice,lastWeekResult];
+	  
+
+    /* welcome and instructions */
+    var instructions = {
+      type: "instructions",
+      pages: ["<p><strong>Welcome to the experiment! This is task "+currTsk+" out of "+numTsks+" and will take about 2 minutes to complete."+
+	"</strong></p> <h3 style='color:TOMATO'>PLEASE READ ALL INSTRUCTIONS CAREFULLY!</h3>"+
+	"<p><em>Press the SPACEBAR to continue.</em></p>",
+		"<p>In the next task you will participate in a single interaction with three other people. You will repeat this task every week."+
+		" Each week you will interact with an entirely new group of people. In other words, <strong>you will NEVER interact with"+
+		" the same group of people more than once during this entire study.</strong>"+
+		"<p>Your choices and the choices of the other participants in the group will determine how many tokens you and "+
+		"the others will receive in this task. The tokens that you collect during the task will serve as lottery tickets for a monthly lottery. "+
+		"The prizes in this lottery are $50 bonuses paid out through Prolific's bonusing system."+
+		" The more tokens you collect, the higher your chances of winning the lottery."+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>Importantly, this interaction will not take place in real time. Instead you will get feedback about the responses "+
+		"recorded from the other participants in your group before you complete this task again next week. In the same way, "+
+		"your responses will be recorded and reported to the other group members anonymously next week."+
+		"<p>In other words, the decisions you make today will affect your and the other participants' future reward."+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>During the interaction, each player starts with 20 tokens. Everyone in your group (including you) will then be asked to decide"+
+		" how many of their 20 tokens they would like to give to the group. You can choose any amount from 0 to 20 tokens."+
+		" Tokens that are not given to the group remain in each player's individual account.<p>Importantly, the computer then multiplies "+
+		"the sum of all tokens given to the group by two. This larger sum is then divided equally among all four group members irrespective"+
+		" of how much they gave to the group. <p>The amount of tokens that each player receives is thus determined by how many tokens "+
+		"they gave to the group, as well as by what the other players decided to do with their tokens.<p>Let's go through an example "+
+		"to see how this will work in practice."+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>Each session, you will be prompted to enter in the number of tokens that you want to give to the group. "+
+		"When you see the screen shown below, click on the respective number (no response needed now). <p>The tokens you do not give to the group stay "+
+		"in your individual account. </p><img src=" +inst1+" style='width:100%;'>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>After you make your decision, feedback about your choice will be shown. Below is what you would see if you had "+
+		"given 20 tokens to the group.<br><img src="+inst2+" style='width:40%;'><br>Next week, when you repeat the experiment,"+
+		" you will get feedback about the other players' decisions as well as their and your payout."+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>For example, the following feedback means that during the game last week you and player4 decided to give all "+
+		"20 tokens to the group, whereas player2 gave 0 tokens and player3 gave 10 tokens to the group."+
+		"<br><img src="+inst3+" style='width:40%;'><br>Let's work through your payout next."+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p><strong>(1)</strong> If you had given your 20 tokens to the group, it would be added to the tokens that the "+
+		"other two players gave (20+20+10=50 tokens),<br><strong>(2)</strong> multiplied by 2 (2*50 tokens=100 tokens),"+
+		"<br><strong>(3)</strong> and then divided equally among the group (100/4=25 tokens). You would get 25 tokens total."+
+		"<img src="+inst4+" style='width:80%;'>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>", 
+		
+		"<p><strong>(1)</strong> If you had kept all 20 tokens, the tokens that the other two players gave would be added (20+10=30"+
+		" tokens),<br><strong>(2)</strong> multiplied by 2 (2*30 tokens=60 tokens),<br><strong>(3)</strong> and then divided equally"+
+		" among the group (60/4=15 tokens). You would get 35 tokens (20 tokens kept + 15 tokens from the group) total.</p>"+
+		"<img src="+inst5+"  style='width:80%;'>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p><strong>(1)</strong> If all four players had kept all tokens,<br><strong>(2)</strong> nothing could be multiplied,"+
+		"<br><strong>(3)</strong> and every group members' total outcome would equal the initial 20 tokens.</p>"+
+		"<img src="+inst6+" style='width:80%;'>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>Remember, that you will not see the outcome of today's choices right away. <br>You will receive feedback about the choices you and the"+
+		" other players make today in the next session.<br> Today, you receive feedback about your and the other"+
+		" players' outcomes from <strong> last session's choices</strong>.</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+		"<p>On the next page you will see <strong>LAST SESSION'S RESULTS</strong>. <p>On the top, you will see feedback about your and the"+
+		" other players' choices.<br> On the bottom, you will see your  and the other players' outcome.</p>"+
+		"<p style='text-align: center'><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></div>",
+		
+],
+
+    post_trial_gap: 1500,
+	key_forward: [32],
+	key_backward: [66],
+	data: {trial_tag: "instructions",}
+    };	
+
+
+		var lastWeekFB = {
+      type: 'html-keyboard-response',
+      stimulus: '',
+	  data: {trial_tag: "lastWeekFB",},
+      prompt: "<p><strong> THESE ARE LAST SESSION'S RESULTS</strong><br></p>"+
+		"<img src="+lastWeekResult+" style='width:80%;'>"+
+		"<p style='text-align: center'><em>Press the SPACEBAR to continue to <strong>THIS WEEK'S CHOICE</strong></em></p></div>",
+			choices: [32],
+		}
+
+
+		var prepareChoice = {
+      type: 'html-keyboard-response',
+      stimulus: '',
+	  data: {trial_tag: "prepChoice",},
+	  prompt: "<p>Prepare to make your choice. </p><p style='text-align: center'><em>Continue by pressing the SPACEBAR.</em></p></div>",
+			choices: [32],
+		}
+
+	var invest = {
+	  	type: 'image-button-response',
+		stimulus: pg_choice,
+	  	prompt: "<p>How many tokens do you want to give to the group?<br>Click on the respective number.</p>",
+		choices: ["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
+		 data: {trial_tag: "choice",},
+		on_finish: function(trial){
+		  response= trial.button_pressed;
+		}
+	};
+	
+	
+	/*feedback investment*/
+    var investFB = {
+		
+      type: 'html-keyboard-response',
+      stimulus: '',
+      prompt: "",
+		
+      choices: [32],
+	  data: {trial_tag: "investFB",},
+
+  	  on_start: function (trial){
+  		  var group_invest = response;
+		  var kept = 20-response;  		  
+  	 		 trial.prompt = "<p><img src="+pg_choice+"  alt='choice' style='width:60%;'><br>You gave "+group_invest+" tokens to the group."+
+		     "<br>You kept "+kept+" tokens to the yourself.</p>"+
+		 	 "<p style='text-align: center'><em>Press the SPACEBAR to end this experiment.</em></p></div>";
+
+  	 }
+	};
+	
+	var endWait ={
+		type: "html-keyboard-response",
+		stimulus: "You completed the experiment. Plaese wait while your data is saved. The next task will start soon.",
+		choices: [jsPsych.NO_KEYS],
+		trial_duration: 5000
+	};	
+	
+	
+	
+	/* wrap up , save data*/ 
+	var wrap_up_block = {
+		type: "html-keyboard-response",
+		stimulus: "",
+		choices: [jsPsych.NO_KEYS],
+		on_start: function() {
+			start_time = jsPsych.startTime(); //displayed in Greenwich Mean Time
+			total_time = jsPsych.totalTime(); //displayed in milliseconds
+			jsPsych.data.get().addToAll({subject_id: sid, task: task, startTime: start_time, totalTime: total_time});
+			if (pav == 0){
+				let date = new Date();
+				let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
+				dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2);		
+				jsPsych.data.get().localSave('csv', task + '_' + sid + '_' + dateString + '.csv');
+			}
+		},
+		trial_duration: 500
+	};
+	
+	
+	var display_data_block = {
+		type: "instructions",
+		pages: ["<p>Thank you for completing task "+currTsk+" out of "+numTsks+"!</p>"],
+		on_start: function (trial){
+			if (currTsk<numTsks){
+				trial.pages[0] += "<p><em>Please press the return/enter key to proceed to the next task</em></p>";
+			} else{
+				trial.pages[0] += '<p style="text-align:center;">'+
+			'<strong>PLEASE NOTE: YOU ARE NOT DONE WITH THE SURVEY, THIS IS NOT THE COMPLETION CODE FOR PROLIFIC.</p></strong>'+
+			"<style>* {cursor:auto}</style><p><em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+  				"field of the survey that you were completing before you started the tasks, and then complete the survey "+
+  				"<br>(you can close this window once you have entered the completion code)</em></p>";
+				trial.key_forward=[jsPsych.NO_KEYS];
+			};
+
+		},
+		key_forward: [13]
+	};
+	
+	var save_data_block = {
+		type: "html-keyboard-response",
+		stimulus: "SAVING DATA - PLEASE HOLD FOR 5 SECONDS",
+		trial_duration: 5000,
+		response_ends_trial: false,
+		key_forward: [jsPsych.NO_KEYS]
+	};
+	
+    function goToNextTask(FTV){
+		var NTV = FTV.split('*t')[1];
+		if ((FTV.match(/\*t/g) || []).length > 1){
+			FTV = FTV.slice(FTV.indexOf('*t',1));
+		}else{
+			FTV = [];
+		};
+		var ntNUM=NTV.split('*a')[0][0];
+		var ntPath=NTV.split('*a')[0].slice(1);			
+		var ntVAR=NTV.slice(NTV.indexOf('*a')).replace(/\*a/g,'&').replace(/\*e/g,'=');
+		var currLoc = window.location.href.split('?')[0];
+		if (currLoc.slice(-5)==".html" || currLoc.slice(-1)=="/"){
+			parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-2,-1)[0]));
+		}else {
+			parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-1)[0]))
+		}
+		
+		var NEXTURL = parLoc + ntPath + ".html" + "?SID=" + sid + "&PAV=" + pav + "&CT=" + (parseInt(currTsk,10)+1) + "o" + numTsks + ntVAR + "&FTV=" + FTV;
+		
+    	window.location = NEXTURL;
+    };
+	
+    var experiment=[];
+    if(pav == 1){
+    /* init connection with pavlovia.org */
+    	var pavlovia_init = {
+    		type: "pavlovia",
+    		command: "init"
+    	};
+    	experiment.push(pavlovia_init);
+    };
+  
+    experiment.push(instructions);
+    experiment.push(lastWeekFB);
+	experiment.push(prepareChoice);
+    experiment.push(invest);
+    experiment.push(investFB);
+	
+    experiment.push(wrap_up_block);
+    if(pav == 1){
+    	var pavlovia_finish = {
+    		type: "pavlovia",
+        	command: "finish",
+			participantId: 'wave9_'+sid
+      	};
+	    experiment.push(pavlovia_finish);
+	  	experiment.push(save_data_block);
+    };  
+    experiment.push(display_data_block);
+	
+   
+
+    /* start the experiment */
+    jsPsych.init({
+		timeline: experiment,
+     preload_images: imgsToPreload,
+		on_interaction_data_update: function(data) {
+		  // console.log(data.event)
+			// jsPsych.data.addDataToLastTrial({browInt:JSON.stringify(data)})
+			if (data.event=='blur'){
+				data.trial_tag='blurevent';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='focus'){
+				data.trial_tag='focusevent';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='fullscreenenter'){
+				fullscreenFlag=1;
+				data.trial_tag='fullscreenenter';
+				jsPsych.data.get().push(data);
+			} else if (data.event=='fullscreenexit'){
+				fullscreenFlag=0;
+				data.trial_tag='fullscreenexit';
+				jsPsych.data.get().push(data);
+			};				
+		},	
+  
+		on_finish: function() {
+				if (FTV.length>0){
+					goToNextTask(FTV);
+				};
+			}
+    });
+  </script>
+  </html>

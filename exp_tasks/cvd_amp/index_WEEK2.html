@@ -1,0 +1,1203 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>cvd_amp</title>
+  <!-- <script type="text/javascript" src="lib/vendors/jspsych-6.0.0/jspsych.js"></script>
+  <link rel="stylesheet" type="text/css" href="lib/vendors/jspsych-6.0.0/css/jspsych.css"/> -->
+
+  <script type="text/javascript" src="jspsych-6.0.5/jspsych.js"></script>
+  <link rel="stylesheet" type="text/css" href="jspsych-6.0.5/css/jspsych.css"/>
+
+  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-image-keyboard-response.js"></script>
+  <script type="text/javascript" src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+  
+  <script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+		  <!-- <script type="text/javascript" src="lib/jspsych-pavlovia-3.0.0.js"></script> -->
+  		<script type="text/javascript" src="lib/jspsych-pavlovia-3.1.0.js"></script>
+ 
+  <style>
+	* {
+		cursor: none;
+		}
+	</style>
+  <style>		
+	img {
+      height: 300px;
+	  align: center;
+    }
+  </style>  
+</head>
+
+<body>
+  <div id="jspsych-target"></div>
+</body>
+<script>
+
+var task='cvd_amp';
+var compCode='cvd19@accy!#1';
+var urlvar = jsPsych.data.urlVariables();
+
+// assumes followup task variables are passed in a string with following tags (*t# to indicate new task with a number, *a to indicate &, *e to indicate =)
+if(typeof urlvar.FTV == 'undefined'){
+	var FTV="";
+}else{
+	var FTV = urlvar.FTV;
+};		
+if(typeof urlvar.SID == 'undefined'){
+	var sid="testing";
+}else{
+	var sid = urlvar.SID;
+};
+if(typeof urlvar.PAV == 'undefined'){
+	var pav = 1;
+}else{
+	var pav = urlvar.PAV;
+};
+if(typeof urlvar.CT == 'undefined'){  //assumes currTask is in format 1o3
+	var currTsk='1';
+	var numTsks='1';			
+}else{
+	var currTsk = urlvar.CT[0];
+	var numTsks = urlvar.CT[2];
+};
+if(typeof urlvar.AH == 'undefined'){
+	var hand="GL";
+}else{
+	var hand = urlvar.AH;
+};
+
+var timing_stim = [75,125,200, -1];
+
+var asian = [	
+'img/Asian/pd_f-006-01_H300.png',
+'img/Asian/pd_f-009-01_H300.png',
+'img/Asian/pd_f-012-01_H300.png',
+'img/Asian/pd_f-014-01_H300.png',
+'img/Asian/pd_f-015-01_H300.png',
+'img/Asian/pd_f-017-01_H300.png',
+'img/Asian/pd_m-009-01_H300.png',
+'img/Asian/pd_m-011-01_H300.png',
+'img/Asian/pd_m-012-01_H300.png',
+'img/Asian/pd_m-013-01_H300.png',
+'img/Asian/pd_m-014-01_H300.png',
+'img/Asian/pd_m-015-01_H300.png'
+];
+
+/* Define the images */
+var black=[
+'img/Black/pd_F_B_18_111_1072_MANUAL_H300.png',
+'img/Black/pd_F_B_20_111_1011_H300.png',
+'img/Black/pd_F_B_20_111_1052_AUTO_H300.png',
+'img/Black/pd_F_B_20_111_1092_AUTO_H300.png',
+'img/Black/pd_F_B_20_111_1144_AUTO_H300.png',
+'img/Black/pd_F_B_23_111_1023_H300.png',
+'img/Black/pd_M_B_18_111_1385_AUTO_H300.png',
+'img/Black/pd_M_B_19_111_1073_AUTO_H300.png',
+'img/Black/pd_M_B_20_111_1088_TC_AUTO_H300.png',
+'img/Black/pd_M_B_20_111_1172_AUTO_H300.png',
+'img/Black/pd_M_B_21_111_1101_AUTO_H300.png',
+'img/Black/pd_M_B_21_111_1102_AUTO_H300.png'
+// 'truststimAMP/pd_black_00108_940128_fb_edt_H300.png',
+// 'truststimAMP/pd_black_00273_940422_fa_edt_H300.png',
+// 'truststimAMP/pd_black_00332_940422_fa_edt_contrast_H300.png',
+// 'truststimAMP/pd_black_00453_940422_fb_edt_H300.png',
+// 'truststimAMP/pd_black_00531_940519_fa_edt_H300.png',
+// 'truststimAMP/pd_black_00558_940519_fa_edt_H300.png',
+// 'truststimAMP/pd_black_00586_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_black_00716_941201_fa_edt_rot_H300.png',
+// 'truststimAMP/pd_black_00746_941201_fb_edt_H300.png',
+// 'truststimAMP/pd_black_00857_940307_fa_edt_H300.png',
+// 'truststimAMP/pd_black_00917_960620_fa_edt_H300.png',
+// 'truststimAMP/pd_black_mb001_H300.png',
+// 'truststimAMP/pd_black_mb003_H300.png',
+// 'truststimAMP/pd_black_mb008_H300.png',
+// 'truststimAMP/pd_black_mb009_H300.png',
+// 'truststimAMP/pd_black_mb013_H300.png',
+// 'truststimAMP/pd_black_mb016_H300.png',
+// 'truststimAMP/pd_black_mb017_H300.png',
+// 'truststimAMP/pd_black_mb018_H300.png',
+// 'truststimAMP/pd_black_mb023_H300.png',
+// 'truststimAMP/pd_black_mb025_H300.png',
+// 'truststimAMP/pd_black_mb026_H300.png',
+// 'truststimAMP/pd_black_mb027_H300.png',
+// 'truststimAMP/pd_black_mb031_H300.png',
+// 'truststimAMP/pd_black_mb032_H300.png',
+// 'truststimAMP/pd_black_mb033_H300.png',
+// 'truststimAMP/pd_black_mb038_H300.png',
+// 'truststimAMP/pd_black_mb039_H300.png',
+// 'truststimAMP/pd_black_mb040_H300.png',
+// 'truststimAMP/pd_black_mb044_H300.png',
+// 'truststimAMP/pd_black_mb045_H300.png',
+// 'truststimAMP/pd_black_mb046_H300.png',
+// 'truststimAMP/pd_black_mb050_H300.png',
+// 'truststimAMP/pd_black_mb054_H300.png',
+// 'truststimAMP/pd_black_mb055_H300.png',
+// 'truststimAMP/pd_black_mb058_H300.png',
+// 'truststimAMP/pd_black_mb062_H300.png',
+// 'truststimAMP/pd_black_mb065_H300.png',
+// 'truststimAMP/pd_black_mb068_H300.png',
+// 'truststimAMP/pd_black_mb069_H300.png',
+// 'truststimAMP/pd_black_mb071_H300.png',
+// 'truststimAMP/pd_black_mb072_H300.png',
+// 'truststimAMP/pd_black_mb078_H300.png',
+// 'truststimAMP/pd_black_mb079_H300.png',
+// 'truststimAMP/pd_black_mb081_H300.png',
+// 'truststimAMP/pd_black_mb083_H300.png',
+// 'truststimAMP/pd_black_mb093_H300.png',
+// 'truststimAMP/pd_black_mb094_H300.png',
+// 'truststimAMP/pd_black_mb097_H300.png',
+// 'truststimAMP/pd_black_mb098_H300.png',
+// 'truststimAMP/pd_black_mb100_H300.png'
+];
+
+
+var other=[
+'img/Other/pd_F_?_24_111_1139_AUTO_H300.png',
+'img/Other/pd_F_A_19_111_1059_AUTO_H300.png',
+'img/Other/pd_F_A_24_111_1164_AUTO_H300.png',
+'img/Other/pd_F_H_20_111_1053_AUTO_H300.png',
+'img/Other/pd_F_M_20_111_1085_AUTO_H300.png',
+'img/Other/pd_LFD_006_03_H300.png',
+'img/Other/pd_M_A_19_111_1093_AUTO_H300.png',
+'img/Other/pd_M_A_20_111_1124_TC_AUTOcrp_H300.png',
+'img/Other/pd_M_A_20_111_1365_AUTO_H300.png',
+'img/Other/pd_M_A_21_111_1125_TC_AUTOcrp_H300.png',
+'img/Other/pd_M_A_21_111_1221_TC_AUTOcrp_H300.png',
+'img/Other/pd_M_A_23_111_1211_TC_AUTOcrp_H300.png'
+// 'truststimAMP/pd_other_00029_940128_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00058_931230_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00096_940128_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00097_931230_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00110_931230_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00132_931230_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00178_931230_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00193_940128_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00216_940128_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00237_940128_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00247_941121_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00261_940128_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00282_940422_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00415_940422_fb_edt_rot_H300.png',
+// 'truststimAMP/pd_other_00461_940422_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00516_940519_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00566_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00570_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00575_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00578_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00582_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00587_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00601_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00614_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00616_940928_fa_edt_rot_H300.png',
+// 'truststimAMP/pd_other_00617_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00618_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00621_941121_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00622_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00623_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00629_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00640_941031_fa_edt_rot_H300.png',
+// 'truststimAMP/pd_other_00652_941031_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00656_941121_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00666_941121_fa_edt_rot_H300.png',
+// 'truststimAMP/pd_other_00672_941121_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00698_941121_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00724_941201_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00726_941201_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00734_941201_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00740_941205_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00763_941201_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00793_941205_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00795_941205_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00809_941205_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00869_940307_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00880_960530_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00921_960627_fb_edt_H300.png',
+// 'truststimAMP/pd_other_00926_960627_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00933_960627_fa_edt_H300.png',
+// 'truststimAMP/pd_other_00976_960627_fb_edt_H300.png'
+];
+
+
+
+var white=[
+'img/White/pd_F_C_18_111_1012_TCcrp_H300.png',
+'img/White/pd_F_C_19_111_1019_TCcrp_H300.png',
+'img/White/pd_F_C_24_111_1070_AUTO_H300.png',
+'img/White/pd_F_C_27_011_1066_MANUAL_H300.png',
+'img/White/pd_F_C_BLANK_111_1001_H300.png',
+'img/White/pd_F_C_BLANK_111_1007_TC_H300.png',
+'img/White/pd_M_BLANK_22_111_1026_H300.png',
+'img/White/pd_M_C_19_111_1021_H300.png',
+'img/White/pd_M_C_19_111_1039_ALT_H300.png',
+'img/White/pd_M_C_19_111_1096_TC_AUTO_H300.png',
+'img/White/pd_M_C_20_111_1042_H300.png',
+'img/White/pd_M_C_20_111_1198_MANUAL_H300.png'
+// 'truststimAMP/pd_white_00109_931230_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00120_931230_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00129_931230_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00199_940128_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00223_940128_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00248_940128_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00283_940422_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00577_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00591_940928_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00597_940928_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00761_941201_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00785_941205_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00807_941205_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00874_940307_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00897_960530_fb_edt_H300.png',
+// 'truststimAMP/pd_white_00898_960530_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00939_960627_fa_edt_H300.png',
+// 'truststimAMP/pd_white_00960_960627_fb_edt_H300.png',
+// 'truststimAMP/pd_white_mw001_H300.png',
+// 'truststimAMP/pd_white_mw006_H300.png',
+// 'truststimAMP/pd_white_mw008_H300.png',
+// 'truststimAMP/pd_white_mw009_H300.png',
+// 'truststimAMP/pd_white_mw010_H300.png',
+// 'truststimAMP/pd_white_mw013_H300.png',
+// 'truststimAMP/pd_white_mw024_H300.png',
+// 'truststimAMP/pd_white_mw025_H300.png',
+// 'truststimAMP/pd_white_mw028_H300.png',
+// 'truststimAMP/pd_white_mw035_H300.png',
+// 'truststimAMP/pd_white_mw038_H300.png',
+// 'truststimAMP/pd_white_mw039_H300.png',
+// 'truststimAMP/pd_white_mw040_H300.png',
+// 'truststimAMP/pd_white_mw041_H300.png',
+// 'truststimAMP/pd_white_mw043_H300.png',
+// 'truststimAMP/pd_white_mw044_H300.png',
+// 'truststimAMP/pd_white_mw046_H300.png',
+// 'truststimAMP/pd_white_mw051_H300.png',
+// 'truststimAMP/pd_white_mw057_H300.png',
+// 'truststimAMP/pd_white_mw065_H300.png',
+// 'truststimAMP/pd_white_mw068_H300.png',
+// 'truststimAMP/pd_white_mw070_H300.png',
+// 'truststimAMP/pd_white_mw071_H300.png',
+// 'truststimAMP/pd_white_mw074_H300.png',
+// 'truststimAMP/pd_white_mw077_H300.png',
+// 'truststimAMP/pd_white_mw080_H300.png',
+// 'truststimAMP/pd_white_mw085_H300.png',
+// 'truststimAMP/pd_white_mw089_H300.png',
+// 'truststimAMP/pd_white_mw091_H300.png',
+// 'truststimAMP/pd_white_mw092_H300.png',
+// 'truststimAMP/pd_white_mw096_H300.png',
+// 'truststimAMP/pd_white_mw098_H300.png',
+// 'truststimAMP/pd_white_mw099_H300.png'
+];
+
+
+var	inks=[
+'inks/pdbrd_sm_inkblot_170816_1750_000.png',
+'inks/pdbrd_sm_inkblot_170816_1750_001.png',
+'inks/pdbrd_sm_inkblot_170816_1750_002.png',
+'inks/pdbrd_sm_inkblot_170816_1750_003.png',
+'inks/pdbrd_sm_inkblot_170816_1750_004.png',
+'inks/pdbrd_sm_inkblot_170816_1750_005.png',
+'inks/pdbrd_sm_inkblot_170816_1750_006.png',
+'inks/pdbrd_sm_inkblot_170816_1750_007.png',
+'inks/pdbrd_sm_inkblot_170816_1750_008.png',
+'inks/pdbrd_sm_inkblot_170816_1750_009.png',
+'inks/pdbrd_sm_inkblot_170816_1750_010.png',
+'inks/pdbrd_sm_inkblot_170816_1750_011.png',
+'inks/pdbrd_sm_inkblot_170816_1750_012.png',
+'inks/pdbrd_sm_inkblot_170816_1750_013.png',
+'inks/pdbrd_sm_inkblot_170816_1750_014.png',
+'inks/pdbrd_sm_inkblot_170816_1750_015.png',
+'inks/pdbrd_sm_inkblot_170816_1750_016.png',
+'inks/pdbrd_sm_inkblot_170816_1750_017.png',
+'inks/pdbrd_sm_inkblot_170816_1750_018.png',
+'inks/pdbrd_sm_inkblot_170816_1750_019.png',
+'inks/pdbrd_sm_inkblot_170816_1750_020.png',
+'inks/pdbrd_sm_inkblot_170816_1750_021.png',
+'inks/pdbrd_sm_inkblot_170816_1750_022.png',
+'inks/pdbrd_sm_inkblot_170816_1750_023.png',
+'inks/pdbrd_sm_inkblot_170816_1750_024.png',
+'inks/pdbrd_sm_inkblot_170816_1750_025.png',
+'inks/pdbrd_sm_inkblot_170816_1750_026.png',
+'inks/pdbrd_sm_inkblot_170816_1750_027.png',
+'inks/pdbrd_sm_inkblot_170816_1750_028.png',
+'inks/pdbrd_sm_inkblot_170816_1750_029.png',
+'inks/pdbrd_sm_inkblot_170816_1750_030.png',
+'inks/pdbrd_sm_inkblot_170816_1750_031.png',
+'inks/pdbrd_sm_inkblot_170816_1750_032.png',
+'inks/pdbrd_sm_inkblot_170816_1750_033.png',
+'inks/pdbrd_sm_inkblot_170816_1750_034.png',
+'inks/pdbrd_sm_inkblot_170816_1750_035.png',
+'inks/pdbrd_sm_inkblot_170816_1750_036.png',
+'inks/pdbrd_sm_inkblot_170816_1750_037.png',
+'inks/pdbrd_sm_inkblot_170816_1750_038.png',
+'inks/pdbrd_sm_inkblot_170816_1750_039.png',
+'inks/pdbrd_sm_inkblot_170816_1750_040.png',
+'inks/pdbrd_sm_inkblot_170816_1750_041.png',
+'inks/pdbrd_sm_inkblot_170816_1750_042.png',
+'inks/pdbrd_sm_inkblot_170816_1750_043.png',
+'inks/pdbrd_sm_inkblot_170816_1750_044.png',
+'inks/pdbrd_sm_inkblot_170816_1750_045.png',
+'inks/pdbrd_sm_inkblot_170816_1750_046.png',
+'inks/pdbrd_sm_inkblot_170816_1750_047.png',
+'inks/pdbrd_sm_inkblot_170816_1750_048.png',
+'inks/pdbrd_sm_inkblot_170816_1750_049.png',
+'inks/pdbrd_sm_inkblot_170816_1750_050.png',
+'inks/pdbrd_sm_inkblot_170816_1750_051.png',
+'inks/pdbrd_sm_inkblot_170816_1750_052.png',
+'inks/pdbrd_sm_inkblot_170816_1750_053.png',
+'inks/pdbrd_sm_inkblot_170816_1750_054.png',
+'inks/pdbrd_sm_inkblot_170816_1750_055.png',
+'inks/pdbrd_sm_inkblot_170816_1750_056.png',
+'inks/pdbrd_sm_inkblot_170816_1750_057.png',
+'inks/pdbrd_sm_inkblot_170816_1750_058.png',
+'inks/pdbrd_sm_inkblot_170816_1750_059.png',
+'inks/pdbrd_sm_inkblot_170816_1750_060.png',
+'inks/pdbrd_sm_inkblot_170816_1750_061.png',
+'inks/pdbrd_sm_inkblot_170816_1750_062.png',
+'inks/pdbrd_sm_inkblot_170816_1750_063.png',
+'inks/pdbrd_sm_inkblot_170816_1750_064.png',
+'inks/pdbrd_sm_inkblot_170816_1750_065.png',
+'inks/pdbrd_sm_inkblot_170816_1750_066.png',
+'inks/pdbrd_sm_inkblot_170816_1750_067.png',
+'inks/pdbrd_sm_inkblot_170816_1750_068.png',
+'inks/pdbrd_sm_inkblot_170816_1750_069.png',
+'inks/pdbrd_sm_inkblot_170816_1750_070.png',
+'inks/pdbrd_sm_inkblot_170816_1750_071.png',
+'inks/pdbrd_sm_inkblot_170816_1750_072.png',
+'inks/pdbrd_sm_inkblot_170816_1750_073.png',
+'inks/pdbrd_sm_inkblot_170816_1750_074.png',
+'inks/pdbrd_sm_inkblot_170816_1750_075.png',
+'inks/pdbrd_sm_inkblot_170816_1750_076.png',
+'inks/pdbrd_sm_inkblot_170816_1750_077.png',
+'inks/pdbrd_sm_inkblot_170816_1750_078.png',
+'inks/pdbrd_sm_inkblot_170816_1750_079.png',
+'inks/pdbrd_sm_inkblot_170816_1750_080.png',
+'inks/pdbrd_sm_inkblot_170816_1750_081.png',
+'inks/pdbrd_sm_inkblot_170816_1750_082.png',
+'inks/pdbrd_sm_inkblot_170816_1750_083.png',
+'inks/pdbrd_sm_inkblot_170816_1750_084.png',
+'inks/pdbrd_sm_inkblot_170816_1750_085.png',
+'inks/pdbrd_sm_inkblot_170816_1750_086.png',
+'inks/pdbrd_sm_inkblot_170816_1750_087.png',
+'inks/pdbrd_sm_inkblot_170816_1750_088.png',
+'inks/pdbrd_sm_inkblot_170816_1750_089.png',
+'inks/pdbrd_sm_inkblot_170816_1750_090.png',
+'inks/pdbrd_sm_inkblot_170816_1750_091.png',
+'inks/pdbrd_sm_inkblot_170816_1750_092.png',
+'inks/pdbrd_sm_inkblot_170816_1750_093.png',
+'inks/pdbrd_sm_inkblot_170816_1750_094.png',
+'inks/pdbrd_sm_inkblot_170816_1750_095.png',
+'inks/pdbrd_sm_inkblot_170816_1750_096.png',
+'inks/pdbrd_sm_inkblot_170816_1750_097.png',
+'inks/pdbrd_sm_inkblot_170816_1750_098.png',
+'inks/pdbrd_sm_inkblot_170816_1750_099.png'
+];
+
+inkstim = inks.slice(0,96);
+inkstim = jsPsych.randomization.shuffle(inkstim);
+
+var	masks_PL=[
+'masks/pdPL_noiseMask_170814_1952_000.png',
+'masks/pdPL_noiseMask_170814_1952_001.png',
+'masks/pdPL_noiseMask_170814_1952_002.png',
+'masks/pdPL_noiseMask_170814_1952_003.png',
+'masks/pdPL_noiseMask_170814_1952_004.png',
+'masks/pdPL_noiseMask_170814_1952_005.png',
+'masks/pdPL_noiseMask_170814_1952_006.png',
+'masks/pdPL_noiseMask_170814_1952_007.png',
+'masks/pdPL_noiseMask_170814_1952_008.png',
+'masks/pdPL_noiseMask_170814_1952_009.png',
+'masks/pdPL_noiseMask_170814_1952_010.png',
+'masks/pdPL_noiseMask_170814_1952_011.png',
+'masks/pdPL_noiseMask_170814_1952_012.png',
+'masks/pdPL_noiseMask_170814_1952_013.png',
+'masks/pdPL_noiseMask_170814_1952_014.png',
+'masks/pdPL_noiseMask_170814_1952_015.png',
+'masks/pdPL_noiseMask_170814_1952_016.png',
+'masks/pdPL_noiseMask_170814_1952_017.png',
+'masks/pdPL_noiseMask_170814_1952_018.png',
+'masks/pdPL_noiseMask_170814_1952_019.png',
+'masks/pdPL_noiseMask_170814_1952_020.png',
+'masks/pdPL_noiseMask_170814_1952_021.png',
+'masks/pdPL_noiseMask_170814_1952_022.png',
+'masks/pdPL_noiseMask_170814_1952_023.png',
+'masks/pdPL_noiseMask_170814_1952_024.png',
+'masks/pdPL_noiseMask_170814_1952_025.png',
+'masks/pdPL_noiseMask_170814_1952_026.png',
+'masks/pdPL_noiseMask_170814_1952_027.png',
+'masks/pdPL_noiseMask_170814_1952_028.png',
+'masks/pdPL_noiseMask_170814_1952_029.png',
+'masks/pdPL_noiseMask_170814_1952_030.png',
+'masks/pdPL_noiseMask_170814_1952_031.png',
+'masks/pdPL_noiseMask_170814_1952_032.png',
+'masks/pdPL_noiseMask_170814_1952_033.png',
+'masks/pdPL_noiseMask_170814_1952_034.png',
+'masks/pdPL_noiseMask_170814_1952_035.png',
+'masks/pdPL_noiseMask_170814_1952_036.png',
+'masks/pdPL_noiseMask_170814_1952_037.png',
+'masks/pdPL_noiseMask_170814_1952_038.png',
+'masks/pdPL_noiseMask_170814_1952_039.png',
+'masks/pdPL_noiseMask_170814_1952_040.png',
+'masks/pdPL_noiseMask_170814_1952_041.png',
+'masks/pdPL_noiseMask_170814_1952_042.png',
+'masks/pdPL_noiseMask_170814_1952_043.png',
+'masks/pdPL_noiseMask_170814_1952_044.png',
+'masks/pdPL_noiseMask_170814_1952_045.png',
+'masks/pdPL_noiseMask_170814_1952_046.png',
+'masks/pdPL_noiseMask_170814_1952_047.png',
+'masks/pdPL_noiseMask_170814_1952_048.png',
+'masks/pdPL_noiseMask_170814_1952_049.png',
+'masks/pdPL_noiseMask_170814_1952_050.png',
+'masks/pdPL_noiseMask_170814_1952_051.png',
+'masks/pdPL_noiseMask_170814_1952_052.png',
+'masks/pdPL_noiseMask_170814_1952_053.png',
+'masks/pdPL_noiseMask_170814_1952_054.png',
+'masks/pdPL_noiseMask_170814_1952_055.png',
+'masks/pdPL_noiseMask_170814_1952_056.png',
+'masks/pdPL_noiseMask_170814_1952_057.png',
+'masks/pdPL_noiseMask_170814_1952_058.png',
+'masks/pdPL_noiseMask_170814_1952_059.png',
+'masks/pdPL_noiseMask_170814_1952_060.png',
+'masks/pdPL_noiseMask_170814_1952_061.png',
+'masks/pdPL_noiseMask_170814_1952_062.png',
+'masks/pdPL_noiseMask_170814_1952_063.png',
+'masks/pdPL_noiseMask_170814_1952_064.png',
+'masks/pdPL_noiseMask_170814_1952_065.png',
+'masks/pdPL_noiseMask_170814_1952_066.png',
+'masks/pdPL_noiseMask_170814_1952_067.png',
+'masks/pdPL_noiseMask_170814_1952_068.png',
+'masks/pdPL_noiseMask_170814_1952_069.png',
+'masks/pdPL_noiseMask_170814_1952_070.png',
+'masks/pdPL_noiseMask_170814_1952_071.png',
+'masks/pdPL_noiseMask_170814_1952_072.png',
+'masks/pdPL_noiseMask_170814_1952_073.png',
+'masks/pdPL_noiseMask_170814_1952_074.png',
+'masks/pdPL_noiseMask_170814_1952_075.png',
+'masks/pdPL_noiseMask_170814_1952_076.png',
+'masks/pdPL_noiseMask_170814_1952_077.png',
+'masks/pdPL_noiseMask_170814_1952_078.png',
+'masks/pdPL_noiseMask_170814_1952_079.png',
+'masks/pdPL_noiseMask_170814_1952_080.png',
+'masks/pdPL_noiseMask_170814_1952_081.png',
+'masks/pdPL_noiseMask_170814_1952_082.png',
+'masks/pdPL_noiseMask_170814_1952_083.png',
+'masks/pdPL_noiseMask_170814_1952_084.png',
+'masks/pdPL_noiseMask_170814_1952_085.png',
+'masks/pdPL_noiseMask_170814_1952_086.png',
+'masks/pdPL_noiseMask_170814_1952_087.png',
+'masks/pdPL_noiseMask_170814_1952_088.png',
+'masks/pdPL_noiseMask_170814_1952_089.png',
+'masks/pdPL_noiseMask_170814_1952_090.png',
+'masks/pdPL_noiseMask_170814_1952_091.png',
+'masks/pdPL_noiseMask_170814_1952_092.png',
+'masks/pdPL_noiseMask_170814_1952_093.png',
+'masks/pdPL_noiseMask_170814_1952_094.png',
+'masks/pdPL_noiseMask_170814_1952_095.png',
+'masks/pdPL_noiseMask_170814_1952_096.png',
+'masks/pdPL_noiseMask_170814_1952_097.png',
+'masks/pdPL_noiseMask_170814_1952_098.png',
+'masks/pdPL_noiseMask_170814_1952_099.png',
+];
+
+masks_PL_stim = masks_PL.slice(0,96);
+masks_PL_stim = jsPsych.randomization.shuffle(masks_PL_stim);
+
+
+var masks_PR= [
+'masks/pdPR_noiseMask_170814_1952_000.png',
+'masks/pdPR_noiseMask_170814_1952_001.png',
+'masks/pdPR_noiseMask_170814_1952_002.png',
+'masks/pdPR_noiseMask_170814_1952_003.png',
+'masks/pdPR_noiseMask_170814_1952_004.png',
+'masks/pdPR_noiseMask_170814_1952_005.png',
+'masks/pdPR_noiseMask_170814_1952_006.png',
+'masks/pdPR_noiseMask_170814_1952_007.png',
+'masks/pdPR_noiseMask_170814_1952_008.png',
+'masks/pdPR_noiseMask_170814_1952_009.png',
+'masks/pdPR_noiseMask_170814_1952_010.png',
+'masks/pdPR_noiseMask_170814_1952_011.png',
+'masks/pdPR_noiseMask_170814_1952_012.png',
+'masks/pdPR_noiseMask_170814_1952_013.png',
+'masks/pdPR_noiseMask_170814_1952_014.png',
+'masks/pdPR_noiseMask_170814_1952_015.png',
+'masks/pdPR_noiseMask_170814_1952_016.png',
+'masks/pdPR_noiseMask_170814_1952_017.png',
+'masks/pdPR_noiseMask_170814_1952_018.png',
+'masks/pdPR_noiseMask_170814_1952_019.png',
+'masks/pdPR_noiseMask_170814_1952_020.png',
+'masks/pdPR_noiseMask_170814_1952_021.png',
+'masks/pdPR_noiseMask_170814_1952_022.png',
+'masks/pdPR_noiseMask_170814_1952_023.png',
+'masks/pdPR_noiseMask_170814_1952_024.png',
+'masks/pdPR_noiseMask_170814_1952_025.png',
+'masks/pdPR_noiseMask_170814_1952_026.png',
+'masks/pdPR_noiseMask_170814_1952_027.png',
+'masks/pdPR_noiseMask_170814_1952_028.png',
+'masks/pdPR_noiseMask_170814_1952_029.png',
+'masks/pdPR_noiseMask_170814_1952_030.png',
+'masks/pdPR_noiseMask_170814_1952_031.png',
+'masks/pdPR_noiseMask_170814_1952_032.png',
+'masks/pdPR_noiseMask_170814_1952_033.png',
+'masks/pdPR_noiseMask_170814_1952_034.png',
+'masks/pdPR_noiseMask_170814_1952_035.png',
+'masks/pdPR_noiseMask_170814_1952_036.png',
+'masks/pdPR_noiseMask_170814_1952_037.png',
+'masks/pdPR_noiseMask_170814_1952_038.png',
+'masks/pdPR_noiseMask_170814_1952_039.png',
+'masks/pdPR_noiseMask_170814_1952_040.png',
+'masks/pdPR_noiseMask_170814_1952_041.png',
+'masks/pdPR_noiseMask_170814_1952_042.png',
+'masks/pdPR_noiseMask_170814_1952_043.png',
+'masks/pdPR_noiseMask_170814_1952_044.png',
+'masks/pdPR_noiseMask_170814_1952_045.png',
+'masks/pdPR_noiseMask_170814_1952_046.png',
+'masks/pdPR_noiseMask_170814_1952_047.png',
+'masks/pdPR_noiseMask_170814_1952_048.png',
+'masks/pdPR_noiseMask_170814_1952_049.png',
+'masks/pdPR_noiseMask_170814_1952_050.png',
+'masks/pdPR_noiseMask_170814_1952_051.png',
+'masks/pdPR_noiseMask_170814_1952_052.png',
+'masks/pdPR_noiseMask_170814_1952_053.png',
+'masks/pdPR_noiseMask_170814_1952_054.png',
+'masks/pdPR_noiseMask_170814_1952_055.png',
+'masks/pdPR_noiseMask_170814_1952_056.png',
+'masks/pdPR_noiseMask_170814_1952_057.png',
+'masks/pdPR_noiseMask_170814_1952_058.png',
+'masks/pdPR_noiseMask_170814_1952_059.png',
+'masks/pdPR_noiseMask_170814_1952_060.png',
+'masks/pdPR_noiseMask_170814_1952_061.png',
+'masks/pdPR_noiseMask_170814_1952_062.png',
+'masks/pdPR_noiseMask_170814_1952_063.png',
+'masks/pdPR_noiseMask_170814_1952_064.png',
+'masks/pdPR_noiseMask_170814_1952_065.png',
+'masks/pdPR_noiseMask_170814_1952_066.png',
+'masks/pdPR_noiseMask_170814_1952_067.png',
+'masks/pdPR_noiseMask_170814_1952_068.png',
+'masks/pdPR_noiseMask_170814_1952_069.png',
+'masks/pdPR_noiseMask_170814_1952_070.png',
+'masks/pdPR_noiseMask_170814_1952_071.png',
+'masks/pdPR_noiseMask_170814_1952_072.png',
+'masks/pdPR_noiseMask_170814_1952_073.png',
+'masks/pdPR_noiseMask_170814_1952_074.png',
+'masks/pdPR_noiseMask_170814_1952_075.png',
+'masks/pdPR_noiseMask_170814_1952_076.png',
+'masks/pdPR_noiseMask_170814_1952_077.png',
+'masks/pdPR_noiseMask_170814_1952_078.png',
+'masks/pdPR_noiseMask_170814_1952_079.png',
+'masks/pdPR_noiseMask_170814_1952_080.png',
+'masks/pdPR_noiseMask_170814_1952_081.png',
+'masks/pdPR_noiseMask_170814_1952_082.png',
+'masks/pdPR_noiseMask_170814_1952_083.png',
+'masks/pdPR_noiseMask_170814_1952_084.png',
+'masks/pdPR_noiseMask_170814_1952_085.png',
+'masks/pdPR_noiseMask_170814_1952_086.png',
+'masks/pdPR_noiseMask_170814_1952_087.png',
+'masks/pdPR_noiseMask_170814_1952_088.png',
+'masks/pdPR_noiseMask_170814_1952_089.png',
+'masks/pdPR_noiseMask_170814_1952_090.png',
+'masks/pdPR_noiseMask_170814_1952_091.png',
+'masks/pdPR_noiseMask_170814_1952_092.png',
+'masks/pdPR_noiseMask_170814_1952_093.png',
+'masks/pdPR_noiseMask_170814_1952_094.png',
+'masks/pdPR_noiseMask_170814_1952_095.png',
+'masks/pdPR_noiseMask_170814_1952_096.png',
+'masks/pdPR_noiseMask_170814_1952_097.png',
+'masks/pdPR_noiseMask_170814_1952_098.png',
+'masks/pdPR_noiseMask_170814_1952_099.png',
+];
+
+masks_PR_stim = masks_PR.slice(0,96);
+masks_PR_stim = jsPsych.randomization.shuffle(masks_PR_stim);
+
+pracStim = ['img/pd_bedside_table_rs_crop_cs_bg_H300.png', 'img/pd_guitar_cs_rs_crop_H300.png','img/pd_lamp_rs_crop_cs_bg_H300.png'];
+
+
+whitestim=jsPsych.randomization.shuffleNoRepeats(white.concat(white));
+blackstim=jsPsych.randomization.shuffleNoRepeats(black.concat(black));
+asianstim=jsPsych.randomization.shuffleNoRepeats(asian.concat(asian));
+// other=jsPsych.randomization.shuffleNoRepeats(other.concat(other));
+greystim=jsPsych.randomization.repeat(['img/pd_greysquare.png'], 24);
+
+
+if(hand == 'GL'){
+	var preload=black.concat(white, asian, inks, masks_PL, pracStim,
+		['img/pd_greysquare.png','misc/taskinstrux2_GL.PNG','misc/blank.png','misc/fixation.png']);
+}else{
+	var preload=black.concat(white, asian, inks, masks_PR, pracStim,
+		['img/pd_greysquare.png','misc/taskinstrux2_GR.PNG','misc/blank.png','misc/fixation.png']);
+};
+
+
+//assign the masks
+var maskBlack_PL=jsPsych.randomization.shuffle(masks_PL_stim.slice(0,24));
+var maskWhite_PL=jsPsych.randomization.shuffle(masks_PL_stim.slice(24,48));
+var maskAsian_PL=jsPsych.randomization.shuffle(masks_PL_stim.slice(48,72));
+var maskGrey_PL=jsPsych.randomization.shuffle(masks_PL_stim.slice(72,96));
+// var maskOther_PL=jsPsych.randomization.shuffle(masks_PL_stim);
+
+var maskBlack_PR=jsPsych.randomization.shuffle(masks_PR_stim.slice(0,24));
+var maskWhite_PR=jsPsych.randomization.shuffle(masks_PR_stim.slice(24,48));
+var maskAsian_PR=jsPsych.randomization.shuffle(masks_PR_stim.slice(48,72));
+var maskGrey_PR=jsPsych.randomization.shuffle(masks_PR_stim.slice(72,96));
+// var maskOther_PR=jsPsych.randomization.shuffle(masks_PR_stim);
+
+//assign the inks
+var inksBlack=jsPsych.randomization.shuffle(inkstim.slice(0,24));
+var inksWhite=jsPsych.randomization.shuffle(inkstim.slice(24,48));
+var inksAsian=jsPsych.randomization.shuffle(inkstim.slice(48,72));
+var inksGrey=jsPsych.randomization.shuffle(inkstim.slice(72,96));
+// var inksOther=jsPsych.randomization.shuffle(inkstim.slice(0,50));
+
+
+// practice stimuli GL
+var pr_stimuli_GL = [];
+// var pr_stim = black.slice(50,51);
+// var pr_whitestim = white.slice(50,51);
+// var pr_otherstim = other.slice(50,51);
+
+var pr_mask_PL = masks_PL.slice(96,99);
+// var pr_maskBlack_PL = masks_PL.slice(50,51);
+// var pr_maskWhite_PL = masks_PL.slice(51,52);
+// var pr_maskOther_PL = masks_PL.slice(52,53);
+
+var pr_inks = inks.slice(96,99);
+// var pr_inksBlack = inks.slice(50,51);
+// var pr_inksWhite = inks.slice(51,52);
+// var pr_inksOther = inks.slice(52,53);
+
+
+for (var i = 0; i < pracStim.length; i++) {
+  pr_stimuli_GL.push({
+	  cue_stimuli: pracStim[i],
+	  ink_stimuli: pr_inks[i],
+	  mask_stimuli: pr_mask_PL[i],
+	  phase: 'practice',
+	  cue: 'objects'
+  })
+};
+
+pr_stimuli_GL = jsPsych.randomization.shuffle(pr_stimuli_GL)
+
+// practice stimuli GR
+var pr_stimuli_GR = [];
+
+var pr_mask_PR = masks_PR.slice(96,99);
+
+var pr_inks = inks.slice(96,99);
+
+for (var i = 0; i < pracStim.length; i++) {
+  pr_stimuli_GR.push({
+	  cue_stimuli: pracStim[i],
+	  ink_stimuli: pr_inks[i],
+	  mask_stimuli: pr_mask_PR[i],
+	  phase: 'practice',
+	  cue: 'objects'
+  })
+};
+
+pr_stimuli_GR = jsPsych.randomization.shuffle(pr_stimuli_GR)
+
+
+
+/* generate the randomized lists of stimuli- BLOCK 1: 12 trials of each type*/ 
+var stimuli1_GL=[];
+for (var i=0; i<12; i++){
+    stimuli1_GL.push({
+  	  cue_stimuli: blackstim[i],
+  	  ink_stimuli: inksBlack[i],
+  	  mask_stimuli: maskBlack_PL[i],
+	  phase: 'datacol',
+	  cue: 'black'
+    })
+    stimuli1_GL.push({
+  	  cue_stimuli: whitestim[i],
+  	  ink_stimuli: inksWhite[i],
+  	  mask_stimuli: maskWhite_PL[i],
+	  phase: 'datacol',
+	  cue: 'white'
+    })
+    stimuli1_GL.push({
+  	  cue_stimuli: asianstim[i],
+  	  ink_stimuli: inksAsian[i],
+  	  mask_stimuli: maskAsian_PL[i],
+	  phase: 'datacol',
+	  cue: 'asian'
+    })
+    stimuli1_GL.push({
+  	  cue_stimuli: greystim[i],
+  	  ink_stimuli: inksGrey[i],
+  	  mask_stimuli: maskGrey_PL[i],
+	  phase: 'datacol',
+	  cue: 'grey'
+    })
+}
+stimuli1_GL=jsPsych.randomization.shuffleNoRepeats(stimuli1_GL)
+
+
+var stimuli1_GR=[];
+for (var i=0; i<12; i++){
+    stimuli1_GR.push({
+  	  cue_stimuli: blackstim[i],
+  	  ink_stimuli: inksBlack[i],
+  	  mask_stimuli: maskBlack_PR[i],
+	  phase: 'datacol',
+	  cue: 'black'
+    })
+    stimuli1_GR.push({
+  	  cue_stimuli: whitestim[i],
+  	  ink_stimuli: inksWhite[i],
+  	  mask_stimuli: maskWhite_PR[i],
+	  phase: 'datacol',
+	  cue: 'white'
+    })
+    stimuli1_GR.push({
+  	  cue_stimuli: asianstim[i],
+  	  ink_stimuli: inksAsian[i],
+  	  mask_stimuli: maskAsian_PR[i],
+	  phase: 'datacol',
+	  cue: 'asian'
+    })
+    stimuli1_GR.push({
+  	  cue_stimuli: greystim[i],
+  	  ink_stimuli: inksGrey[i],
+  	  mask_stimuli: maskGrey_PR[i],
+	  phase: 'datacol',
+	  cue: 'grey'
+    })
+}
+stimuli1_GR=jsPsych.randomization.shuffleNoRepeats(stimuli1_GR)
+
+/* generate the randomized lists of stimuli- BLOCK 2: 12 trials of each type*/ 
+var stimuli2_GL=[];
+for (var i=12; i<24; i++){
+    stimuli2_GL.push({
+  	  cue_stimuli: blackstim[i],
+  	  ink_stimuli: inksBlack[i],
+  	  mask_stimuli: maskBlack_PL[i],
+	  phase: 'datacol',
+	  cue: 'black'
+    })
+    stimuli2_GL.push({
+  	  cue_stimuli: whitestim[i],
+  	  ink_stimuli: inksWhite[i],
+  	  mask_stimuli: maskWhite_PL[i],
+	  phase: 'datacol',
+	  cue: 'white'
+    })
+    stimuli2_GL.push({
+  	  cue_stimuli: asianstim[i],
+  	  ink_stimuli: inksAsian[i],
+  	  mask_stimuli: maskAsian_PL[i],
+	  phase: 'datacol',
+	  cue: 'asian'
+    })
+    stimuli2_GL.push({
+  	  cue_stimuli: greystim[i],
+  	  ink_stimuli: inksGrey[i],
+  	  mask_stimuli: maskGrey_PL[i],
+	  phase: 'datacol',
+	  cue: 'grey'
+    })
+}
+stimuli2_GL=jsPsych.randomization.shuffleNoRepeats(stimuli2_GL)
+
+
+var stimuli2_GR=[];
+for (var i=12; i<24; i++){
+    stimuli2_GR.push({
+  	  cue_stimuli: blackstim[i],
+  	  ink_stimuli: inksBlack[i],
+  	  mask_stimuli: maskBlack_PR[i],
+	  phase: 'datacol',
+	  cue: 'black'
+    })
+    stimuli2_GR.push({
+  	  cue_stimuli: whitestim[i],
+  	  ink_stimuli: inksWhite[i],
+  	  mask_stimuli: maskWhite_PR[i],
+	  phase: 'datacol',
+	  cue: 'white'
+    })
+    stimuli2_GR.push({
+  	  cue_stimuli: asianstim[i],
+  	  ink_stimuli: inksAsian[i],
+  	  mask_stimuli: maskAsian_PR[i],
+	  phase: 'datacol',
+	  cue: 'asian'
+    })
+    stimuli2_GR.push({
+  	  cue_stimuli: greystim[i],
+  	  ink_stimuli: inksGrey[i],
+  	  mask_stimuli: maskGrey_PR[i],
+	  phase: 'datacol',
+	  cue: 'grey'
+    })
+}
+stimuli2_GR=jsPsych.randomization.shuffleNoRepeats(stimuli2_GR)
+
+
+/*set up welcome block*/
+var instructions_GL = {
+  type: "instructions",
+  pages: [
+	  "<p><strong>Welcome! This is task "+currTsk+" out of "+numTsks+" and will take less than 5 minutes to complete.</strong></p>"+'<p>Press SPACEBAR to continue, B to go back.</p>',
+	  "<div class='header'><small>Task "+currTsk+" of "+numTsks+" </small></div><p style='margin-top:20%'>Place your left index finger on the E key and your right index finger on the I key.</p>"+'<p>Press SPACEBAR to continue, B to go back.</p>',
+	  "<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; </small></div>"+"<p>In this task, you will make 96 evaluative judgments of inkblots.<br>On each round, you will first see a picture of a face, an object, or gray square. Then you will see an image of an inkblot drawing, followed by an image of black and white noise.</p>"+ "<center><img src='misc/taskinstrux2_obj_GL.PNG' style='height:196px;width:600px'></img></center>"+'<p>Finally, you will make an evaluative judgment as to whether '+
+	' the inkblot drawing that you saw was "pleasant" or "unpleasant".</p>'+
+	  '<p><strong>Importantly</strong>, these images are only going '+
+	  'to be presented on the screen for a <strong>very short time</strong>, do your best to <strong>focus on the inkblot</strong>. Because they will be presented so rapidly, you may sometimes ' +
+	  'feel like you missed an image, or that you are not sure how you felt about an inkblot. That is OK! When you are not sure what response to enter, <strong>just go with your intuition or gut feeling</strong>. This may sometimes feel silly, but it is all part of the task.'+
+	  "<p><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></center>",
+	  '<p>It is important to note that the pictures of faces and objects can sometimes bias people\'s judgments of the drawings. Because we are interested in how '+
+	'people can avoid being biased, <strong>please try your absolute best not to let the pictures of faces and objects bias your judgment of the drawings!</strong> Give us an honest assessment of the inkblot drawings, regardless of the images that precede them.</p>' + 
+	'<p style="text-align:center;">Press <strong>E</strong> with your left index finger if the inkblot was <strong>pleasant</strong>.</p><p style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Press <strong>I</strong> with your right index finger if the inkblot was <strong>unpleasant</strong>.</p>'+
+	  '<p>Press SPACEBAR to continue, B to go back.</p>',
+	"<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Practice Block</small></div>"+ '<p>You will now begin three practice trials of the task.</p>'+	"<p><em>Press SPACEBAR to begin the practice trials, B to go back to the previous screen</em></p></center>"],
+	key_forward: [32],
+	key_backward: [66],
+	data: {sinfo: 'AMP_'+sid+'_'+currTsk} 
+};
+
+var instructions_GR = {
+  type: "instructions",
+  pages: [
+	  "<p><strong>Welcome! This is task "+currTsk+" out of "+numTsks+" and will take less than 5 minutes to complete.</strong></p>"+'<p>Press SPACEBAR to continue, B to go back.</p>',
+	  "<div class='header'><small>Task "+currTsk+" of "+numTsks+" </small></div><p style='margin-top:20%'>Place your left index finger on the E key and your right index finger on the I key.</p>"+'<p>Press SPACEBAR to continue, B to go back.</p>',
+	  "<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; </small></div>"+"<p>You will make 150 evaluative judgments of images. On each round, you will first see a picture of a face, an object, or gray square. Then you will see an image of an inkblot drawing, followed by an image of black and white noise.</p>"+ "<center><img src='misc/taskinstrux2_obj_GR.PNG' style='height:196px;width:600px'></img></center>"+'<p>Finally, you will make an evaluative judgment as to whether '+
+	' the inkblot drawing that you saw was "pleasant" or "unpleasant".</p>' +
+	  '<p><strong>Importantly</strong>, these images are only going '+
+	  'to be presented on the screen for a <strong>very short time</strong>, do your best to <strong>focus on the inkblot</strong>. Because they will be presented so rapidly, you may sometimes ' +
+	  'feel like you missed an image, or that you are not sure how you felt about an inkblot. That is OK! When you are not sure what response to enter, <strong>just go with your intuition or gut feeling</strong>. This may sometimes feel silly, but it is all part of the task.'+
+	  "<p><em>Press SPACEBAR to continue, B to go back to the previous screen</em></p></center>",
+	  '<p>It is important to note that the pictures of faces and objects can sometimes bias people\'s judgments of the drawings. Because we are interested in how '+
+	'people can avoid being biased, <strong>please try your absolute best not to let the pictures of faces and objects bias your judgment of the drawings!</strong> Give us an honest assessment of the inkblot drawings, regardless of the images that precede them.</p>' + 
+	'<p style="text-align:center;">Press <strong>E</strong> with your left index finger if the inkblot was <strong>unpleasant</strong>.</p><p style="text-align:center;">Press <strong>I</strong> with your right index finger if the inkblot was <strong>pleasant</strong>.</p>'+
+	  '<p>Press SPACEBAR to continue, B to go back.</p>',
+	"<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Practice Block</small></div>"+ '<p>You will now begin three practice trials of the task.</p>'+	"<p><em>Press SPACEBAR to begin the practice trials, B to go back to the previous screen</em></p></center>"],
+	key_forward: [32],
+	key_backward: [66],
+	data: {sinfo: 'AMP_'+sid+'_'+currTsk} 
+};
+
+var fixation={
+  type: 'image-keyboard-response',
+  stimulus: 'misc/fixation.png',
+  choices: jsPsych.NO_KEYS,
+  trial_duration: 1000,
+  data: {test_part: 'fixation'}
+}
+
+var cue={
+  type: 'image-keyboard-response',
+  stimulus: jsPsych.timelineVariable('cue_stimuli'),
+  choices: jsPsych.NO_KEYS,
+  trial_duration: timing_stim[0],
+  data: {test_part: 'cue'}
+}
+
+var blank={
+  type: 'image-keyboard-response',
+  stimulus: 'misc/blank.png',
+  choices: jsPsych.NO_KEYS,
+  trial_duration: timing_stim[1],
+  data: {test_part: 'blank'}
+}
+
+var ink={
+  type: 'image-keyboard-response',
+  stimulus: jsPsych.timelineVariable('ink_stimuli'),
+  choices: jsPsych.NO_KEYS,
+  trial_duration: timing_stim[2],
+  data: {test_part: 'ink'}
+}
+
+var mask={
+  type: 'image-keyboard-response',
+  stimulus: jsPsych.timelineVariable('mask_stimuli'),
+  choices: [69, 73, 46],
+  data: {test_part: 'mask', resp_val: '', phase: jsPsych.timelineVariable('phase'), cue: jsPsych.timelineVariable('cue')},
+  on_finish: function(data){
+    if(data.key_press == 46){
+      jsPsych.endExperiment('The experiment was ended by pressing Del.');
+    }
+	if (data.key_press==69){
+		if (hand=='GL') {
+			data.resp_val=1;
+		} else {
+			data.resp_val=-1;			
+		};
+	} else {
+		if (hand=='GL') {
+			data.resp_val=-1;
+		} else {
+			data.resp_val=1;			
+		};		
+	};	
+	data.key_press=String.fromCharCode(data.key_press);
+  }
+}
+
+var prblock_GL = {
+	timeline: [fixation, cue, blank, ink, mask],
+	timeline_variables: pr_stimuli_GL
+}
+
+var prblock_GR = {
+	timeline: [fixation, cue, blank, ink, mask],
+	timeline_variables: pr_stimuli_GR
+}
+
+
+var begin_exp_GR={
+  type: "instructions",
+  pages: ["<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Block 1 of 2</small></div>"+'<p>You have finished the practice trials and will now begin the actual task.</p>' +
+	'<p style="text-align:center;"><strong>Remember, focus on the inkblots, please try your absolute best not to let the pictures of faces and objects bias your judgment of the inkblots!</strong></p>'+
+  '<p style="text-align:center;"> Press <strong>E</strong> with your left index finger if the inkblot was <strong>unpleasant</strong>.</p><p style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Press <strong>I</strong>  with your right index finger if the inkblot was <strong>pleasant</strong>.</p>'+
+	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to begin.</p></div>"],
+	key_forward: [32],
+	key_backward: [jsPsych.NO_KEYS]
+};
+
+
+var begin_exp_GL={
+  type: "instructions",
+  pages: ["<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Block 1 of 2</small></div>"+'<p>You have finished the practice trials and will now begin the actual task.</p>' +
+	'<p style="text-align:center;"><strong>Remember, focus on the inkblots, please try your absolute best not to let the pictures of faces and objects bias your judgment of the inkblots!</strong></p>'+
+  '<p style="text-align:center;"> Press <strong>E</strong> with your left index finger if the inkblot was <strong>pleasant</strong>.</p><p style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Press <strong>I</strong>  with your right index finger if the inkblot was <strong>unpleasant</strong>.</p>'+
+	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to begin.</p></div>"],
+	key_forward: [32],
+	key_backward: [jsPsych.NO_KEYS]
+};
+
+/*create blocks with 18 trials each for a total of 72 trials */
+var block1_GL = {
+  timeline: [fixation, cue, blank, ink, mask],
+  timeline_variables: stimuli1_GL
+};
+var block2_GL = {
+  timeline: [fixation, cue, blank, ink, mask],
+  timeline_variables: stimuli2_GL
+};
+
+var block1_GR = {
+  timeline: [fixation, cue, blank, ink, mask],
+  timeline_variables: stimuli1_GR
+};
+var block2_GR = {
+  timeline: [fixation, cue, blank, ink, mask],
+  timeline_variables: stimuli2_GR
+};
+
+
+var interblock12_GR={
+	type: "instructions",
+	pages: ["<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Block 2 of 2</small></div>"+'<p>You have finished Block 1 of 2.' +
+	'<p style="text-align:center;"><strong>Remember, focus on the inkblots, please try your absolute best not to let the pictures of faces and objects bias your judgment of the inkblots!</strong></p>'+
+	'<p style="text-align:center;"> Press <strong>E</strong> with your left index finger if the inkblot was <strong>unpleasant</strong>.</p><p style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Press <strong>I</strong>  with your right index finger if the inkblot was <strong>pleasant</strong>.</p>'+
+	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>"],
+	key_forward: [32],
+	key_backward: [jsPsych.NO_KEYS]
+};
+
+
+var interblock12_GL={
+  type: "instructions",
+  pages: ["<div class='header'><small>Task "+currTsk+" of "+numTsks+" &nbsp; &nbsp; &nbsp; &nbsp; Block 2 of 2</small></div>"+'<p>You have finished Block 1 of 2.' + 
+	'<p style="text-align:center;"><strong>Remember, focus on the inkblots, please try your absolute best not to let the pictures of faces and objects bias your judgment of the inkblots!</strong></p>'+
+  '<p style="text-align:center;"> Press <strong>E</strong> with your left index finger if the inkblot was <strong>pleasant</strong>.</p><p style="text-align:center;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Press <strong>I</strong>  with your right index finger if the inkblot was <strong>unpleasant</strong>.</p>'+
+	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>"],
+	key_forward: [32],
+	key_backward: [jsPsych.NO_KEYS]
+};
+
+
+var wrap_up_block = {
+	type: "html-keyboard-response",
+	stimulus: "",
+	choices: [jsPsych.NO_KEYS],
+	on_start: function() {
+		start_time = jsPsych.startTime(); //displayed in Greenwich Mean Time
+		total_time = jsPsych.totalTime(); //displayed in milliseconds
+		var blackMeanResp=jsPsych.data.get().filter({phase:'datacol', cue:'black'}).filterCustom(function(trial){return trial.rt>100&&trial.rt<2800}).select('resp_val').mean();
+		var whiteMeanResp=jsPsych.data.get().filter({phase:'datacol', cue:'white'}).filterCustom(function(trial){return trial.rt>100&&trial.rt<2800}).select('resp_val').mean();
+		var asianMeanResp=jsPsych.data.get().filter({phase:'datacol', cue:'asian'}).filterCustom(function(trial){return trial.rt>100&&trial.rt<2800}).select('resp_val').mean();
+		var greyMeanResp=jsPsych.data.get().filter({phase:'datacol', cue:'grey'}).filterCustom(function(trial){return trial.rt>100&&trial.rt<2800}).select('resp_val').mean();
+		var pctGoodTrials=jsPsych.data.get().filter({phase:'datacol'}).filterCustom(function(trial){return trial.rt>100&&trial.rt<2800}).select('resp_val').count()/
+		jsPsych.data.get().filter({phase:'datacol'}).count();
+		jsPsych.data.get().addToAll({subject_id: sid, task: task, hand: hand, startTime: start_time, totalTime: total_time, 
+			mean_black: blackMeanResp, mean_white: whiteMeanResp, mean_asian: asianMeanResp, mean_grey: greyMeanResp, prct_usable_trials: pctGoodTrials});
+		if(pav == 0){
+			let date = new Date();
+			let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
+			dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2);
+			
+			jsPsych.data.get().localSave('csv', task + '_' + sid + '_' + dateString + '.csv');
+		};
+	},
+	trial_duration: 500
+};
+
+  var display_data_block = {
+    type: "instructions",
+  	pages: ["<p>Thank you for completing task "+currTsk+" out of "+numTsks+"!</p>"],
+  	on_start: function (trial){
+  		if (currTsk<numTsks){
+  			trial.pages[0] += "<p><em>Please press the return/enter key to proceed to the next task</em></p>";
+  		} else{
+			trial.pages[0] += '<p style="text-align:center;">'+
+			'<strong>PLEASE NOTE: YOU ARE NOT DONE WITH THE SURVEY, THIS IS NOT THE COMPLETION CODE FOR PROLIFIC.</p></strong>'+
+			"<style>* {cursor:auto}</style><p><em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+  				"field of the survey that you were completing before you started the tasks, and then complete the survey "+
+  				"<br>(you can close this window once you have entered the completion code)</em></p>";
+  			trial.key_forward=[jsPsych.NO_KEYS];
+  		};
+		
+  	},
+    key_forward: [13]
+  };
+  
+  var save_data_block = {
+  	type: "html-keyboard-response",
+  	stimulus: "SAVING DATA - PLEASE WAIT FOR 5 SECONDS",
+  	trial_duration: 5000,
+  	response_ends_trial: false,
+  	choices: [jsPsych.NO_KEYS]
+  };
+  
+  var opt_out_block = {
+  	type: "html-keyboard-response",
+	  stimulus: '',
+  	response_ends_trial: true,
+  	choices: [32, 81],
+	  on_start: function(trial){
+    		if (currTsk<numTsks){
+    			trial.stimulus = "<p style='text-align:center;'><strong>NOTE: Because of the speed at which stimuli will be presented,"+
+				" <BR>this next task may be triggering for people with photosensitive epilepsy.</strong> "+
+				"<p style='text-align:center;'>If you have this condition, you may choose to skip this task by pressing the letter 'q' now. "+
+				"<p style='text-align:center;'>Otherwise, please continue to the practice session by pressing the SPACEBAR."+
+	 		   	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>";
+    		} else{
+  			trial.stimulus = "<p style='text-align:center;'><strong>NOTE: Because of the speed at which stimuli will be presented,"+
+				" <BR>this next task may be triggering for people with photosensitive epilepsy.</strong> "+
+				"<p style='text-align:center;'><strong>If you have this condition</strong>,"+
+				" you may choose to skip this task by pressing the letter 'q'."+
+				// "<BR>(<em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+				//     				"field of the survey that you were completing before you started the tasks, and then complete the survey</em>) " +
+				"<p style='text-align:center;'>IF YOU DO NOT HAVE THIS CONDITION, please continue to the practice session by pressing the SPACEBAR."+
+	 		   	"<p style='text-align:center'>Press the <b>SPACEBAR</b> to continue.</p></div>";
+    		};
+	  },
+	  on_finish: function(trial){
+  		if (trial.key_press==81){
+			if (FTV.length>0){
+	  			goToNextTask(FTV);
+	  		} else {
+				jsPsych.endExperiment('<p style="text-align:center;">'+
+			'<strong>PLEASE NOTE: YOU ARE NOT DONE WITH THE SURVEY, THIS IS NOT THE COMPLETION CODE FOR PROLIFIC.</p></strong>'+
+			"<style>* {cursor:auto}</style><p><em>Please copy this task completion code: <strong>"+compCode+"</strong><br> Paste it into the correct "+
+  				"field of the survey that you were completing before you started the tasks, and then complete the survey "+
+  				"<br>(you can close this window once you have entered the completion code)</em></p>");
+	  		}
+  		}
+	  }
+  };
+  
+  function goToNextTask(FTV){
+	var NTV = FTV.split('*t')[1];
+	if ((FTV.match(/\*t/g) || []).length > 1){
+		FTV = FTV.slice(FTV.indexOf('*t',1));
+	}else{
+		FTV = [];
+	};
+	var ntNUM=NTV.split('*a')[0][0];
+	var ntPath=NTV.split('*a')[0].slice(1);			
+	var ntVAR=NTV.slice(NTV.indexOf('*a')).replace(/\*a/g,'&').replace(/\*e/g,'=');
+	var currLoc = window.location.href.split('?')[0];
+	if (currLoc.slice(-5)==".html" || currLoc.slice(-1)=="/"){
+		parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-2,-1)[0]));
+	}else {
+		parLoc=currLoc.slice(0,currLoc.indexOf(currLoc.split("/").slice(-1)[0]))
+	}
+	
+	var NEXTURL = parLoc + ntPath + ".html" + "?SID=" + sid + "&PAV=" + pav + "&CT=" + (parseInt(currTsk,10)+1) + "o" + numTsks + ntVAR + "&FTV=" + FTV;
+	
+  	window.location = NEXTURL;
+  };
+
+  var experiment=[]; 
+  if(pav == 1){
+  // /* init connection with pavlovia.org */
+	  var pavlovia_init = {
+	  	type: "pavlovia",
+	  	command: "init"
+	  };
+	  experiment.push(pavlovia_init);
+  }
+  
+  //
+
+  switch(hand){
+  case "GL":
+	experiment.push(instructions_GL);
+	experiment.push(opt_out_block);
+	experiment.push(prblock_GL);
+	experiment.push(begin_exp_GL);
+	experiment.push(block1_GL);
+	experiment.push(interblock12_GL);
+	experiment.push(block2_GL);
+  break;
+  case "GR":
+	experiment.push(instructions_GR);
+	experiment.push(opt_out_block);
+	experiment.push(prblock_GR);
+	experiment.push(begin_exp_GR);
+	experiment.push(block1_GR);
+	experiment.push(interblock12_GR);
+	experiment.push(block2_GR);
+  break;
+  default: ;
+  break;
+  }
+
+experiment.push(wrap_up_block);
+  /* finish connection with pavlovia.org */
+  if(pav == 1){
+  	var pavlovia_finish = {
+  		type: "pavlovia",
+      	command: "finish",
+		participantId: 'WEEK2_'+sid
+    	};
+  experiment.push(pavlovia_finish);
+  experiment.push(save_data_block);
+ } 
+experiment.push(display_data_block);
+ 
+  
+  jsPsych.init({
+	timeline: experiment,
+	preload_images: preload,
+    on_interaction_data_update: function(data) {
+      // console.log(data.event)
+		// jsPsych.data.addDataToLastTrial({browInt:JSON.stringify(data)})
+		if (data.event=='blur'){
+			data.trialtype='blurevent';
+			jsPsych.data.get().push(data);
+		} else if (data.event=='focus'){
+			data.trialtype='focusevent';
+			jsPsych.data.get().push(data);
+		} else if (data.event=='fullscreenenter'){
+			fullscreenFlag=1;
+			data.trialtype='fullscreenenter';
+			jsPsych.data.get().push(data);
+		} else if (data.event=='fullscreenexit'){
+			fullscreenFlag=0;
+			data.trialtype='fullscreenexit';
+			jsPsych.data.get().push(data);
+		};				
+	},	
+	on_finish: function() {
+		if (FTV.length>0){
+			goToNextTask(FTV);
+		};
+	}
+  });
+</script>
+</html>
