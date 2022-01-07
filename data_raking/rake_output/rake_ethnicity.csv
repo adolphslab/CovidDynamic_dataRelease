@@ -1,0 +1,4 @@
+"","Target","Unweighted N","Unweighted %","Wtd N","Wtd %","Change in %","Resid. Disc.","Orig. Disc."
+"Hispanic or Latino",0.178,119,0.101,209.506,0.178,0.077,0,0.077
+"Not Hispanic or Latino",0.822,1058,0.899,967.494,0.822,-0.077,0,-0.077
+"Total",1,1177,1,1177,1,0.154,0,0.154
