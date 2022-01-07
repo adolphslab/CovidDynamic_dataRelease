@@ -1,0 +1,1772 @@
+---
+title: "Result Plots V2"
+output: html_notebook
+---
+
+```{r}
+# require necessary packages
+library(dplyr)
+library(tidyverse)
+library(viridis)
+library(readxl)
+library(pracma)
+library(geojsonio)
+library(broom)
+library(ggpattern)
+
+# Load necessary packages
+dat <- read.csv("latest_data/Wave1-16_A-M_v1_3.csv")
+census <- read.csv("ACS_DemHousingEst2018ACS_2018_censusEstimate.csv")
+core_samples <- read.csv("latest_data/core_sample_prlfc.csv")
+us_zip_code <- read.csv("us-zip-code-latitude-and-longitude.csv", sep=";")
+request_lookup = read_excel('Combined_Request_Lookup.xlsx', skip=1)
+data_dictionary = read_excel('Combined_Data_Dictionary.xlsx', skip=1)
+state_long_lat = read.csv('statelatlong.csv')
+state_propotion = read.csv('stateProportion_w1_and_census_updated.csv')
+pgg_all = read.csv('latest_data/pgg_w1-16_A-M.csv')
+pgg_all = pgg_all[pgg_all$PROLIFIC_PID %in% core_samples$PROLIFIC_PID,]
+biat = read.csv('latest_data/biat_AsianBlack_w1-16_A-M.csv')
+
+dat = dat[(dat$PROLIFIC_PID %in% core_samples$PROLIFIC_PID) & !(dat$wave %in% c('15b')),]
+
+dat = left_join(dat, biat, by=c('PROLIFIC_PID', 'wave'))
+
+# id_all_waves <- numeric()
+# for (id in core_samples_id){
+#   if (dim(dat_prolific[dat_prolific$PROLIFIC_PID==id,])[1]==8){
+#     id_all_waves <- c(id_all_waves, id)
+#   }
+# }
+
+furthest_10 = read.csv('furthest_10ids_v2.csv')
+furthest_5 = read.csv('latest_data/furthest_5ids_w1to16.csv')
+limits=c(as.Date("2020-03-25"), as.Date("2021-01-30"))
+# Helper functions
+get_text <- function(dat, data_dictionary, variable){
+  state_text = data_dictionary[data_dictionary$Variable==variable, 'Text']$Text
+  test = unlist(strsplit(state_text, ';'))
+  v_num = character()
+  v_char = character()
+  for (txt in test){
+    tmp <- txt %>% str_trim(.)
+    for (val_key in strsplit(tmp, '=')){
+      num = str_trim(val_key[1])
+      char = str_trim(val_key[2])
+      v_num <- c(v_num, num)
+      v_char <- c(v_char, char)
+    }
+  }
+  out <- character()
+  for (val in dat[,variable]){
+    out <- c(out, v_char[val])
+  }
+  return(out)
+}
+
+rename_column <- function(dat, col, new_name){
+  names(dat)[names(dat)==col] <- new_name
+  return (dat)
+}
+
+creat_subject_df <- function(dat_prolific, col, subjects){
+  print(dat_prolific)
+  subject <- character()
+  value <- numeric()
+  wave <- character()
+  date <- vector()
+  class(date) <- "Date"
+  
+  tmp_wave <- c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16')
+  wave_dates <- c(as.Date("2020-04-04"), as.Date("2020-04-11"), as.Date("2020-04-18"),
+                as.Date("2020-04-25"), as.Date("2020-05-09"), as.Date("2020-05-23"),
+                as.Date("2020-06-06"), as.Date("2020-06-27"),
+                as.Date("2020-07-18"), as.Date("2020-08-08"),
+                as.Date("2020-08-29"), as.Date("2020-09-19"),
+                as.Date("2020-10-10"), as.Date("2020-11-07"),
+                as.Date("2020-12-05"), as.Date("2021-01-23"))
+  subject_id = 1
+  for (i in 1:length(subjects)){
+    row <- dat_prolific[dat_prolific$PROLIFIC_PID==subjects[i], col]
+    print(row)
+    if (length(row) < 16){
+      print(1)
+      next
+    }
+    print(subjects[i])
+    print(row)
+    value <- c(value, row)
+    wave <- c(wave, tmp_wave)
+    subject <- c(subject, rep(paste('subject', toString(subject_id)), 16))
+    subject_id = subject_id + 1
+    date <- c(date, wave_dates)
+    print(wave_dates)
+  }
+  print(value)
+  print(wave)
+  print(subject)
+  print(date)
+  df <- data.frame(wave, value, subject, date)
+  df <- na.omit(df)
+  return(df)
+}
+
+creat_subject_df_pgg <- function(dat_prolific, col, subjects){
+  print(dat_prolific)
+  subject <- character()
+  value <- numeric()
+  wave <- character()
+  date <- vector()
+  class(date) <- "Date"
+  
+  tmp_wave <- c('1', '2', '3', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16')
+  wave_dates <- c(as.Date("2020-04-04"), as.Date("2020-04-11"), as.Date("2020-04-18"),  as.Date("2020-05-09"), as.Date("2020-05-23"),
+                as.Date("2020-06-06"), as.Date("2020-06-27"),
+                as.Date("2020-07-18"), as.Date("2020-08-08"),
+                as.Date("2020-08-29"), as.Date("2020-09-19"),
+                as.Date("2020-10-10"), as.Date("2020-11-07"),
+                as.Date("2020-12-05"), as.Date("2021-01-23"))
+  subject_id = 1
+  for (i in 1:length(subjects)){
+    row <- dat_prolific[dat_prolific$PROLIFIC_PID==subjects[i], col]
+    print(row)
+    if (length(row) < 15){
+      print(1)
+      next
+    }
+    print(subjects[i])
+    print(row)
+    value <- c(value, row)
+    wave <- c(wave, tmp_wave)
+    subject <- c(subject, rep(paste('subject', toString(subject_id)), 15))
+    subject_id = subject_id + 1
+    date <- c(date, wave_dates)
+    print(wave_dates)
+  }
+  print(value)
+  print(wave)
+  print(subject)
+  print(date)
+  df <- data.frame(wave, value, subject, date)
+  df <- na.omit(df)
+  return(df)
+}
+
+# col <- 'own_invest'
+# 
+# subject_df <- creat_subject_df_pgg(pgg_all, col, selected_subjects)
+# subject_df
+# unique(pgg_all$wave)
+
+```
+
+```{r}
+wave_dates <- c(as.Date("2020-04-04"), as.Date("2020-04-11"), as.Date("2020-04-18"),
+                as.Date("2020-04-25"), as.Date("2020-05-09"), as.Date("2020-05-23"),
+                as.Date("2020-06-06"), as.Date("2020-06-27"),
+                as.Date("2020-07-18"), as.Date("2020-08-08"),
+                as.Date("2020-08-29"), as.Date("2020-09-19"),
+                as.Date("2020-10-10"), as.Date("2020-11-07"),
+                as.Date("2020-12-05"), as.Date("2021-01-23"))
+
+waves <- c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16')
+waves_text <- c('Wave 1', 'Wave 2', 'Wave 3', 'Wave 4', 'Wave 5', 'Wave 6', 'Wave 7', 'Wave 8', 'Wave 9', 'Wave 10', 'Wave 11', 'Wave 12', 'Wave 13', 'Wave 14', 'Wave 15', 'Wave 16')
+wave_dates_df <- data.frame(wave=waves, date=wave_dates)
+dat <- left_join(dat, wave_dates_df, by='wave')
+dat_prolific <- subset(dat, !startsWith(PROLIFIC_PID, "CC"))
+```
+
+
+
+```{r}
+#pgg_all = rbind(pgg_w1, pgg_w2, pgg_w3, pgg_w4, pgg_w5, pgg_w6, pgg_w7, pgg_w8)
+pgg_all <- left_join(pgg_all, wave_dates_df, by='wave')
+pgg_all
+unique(pgg_all$wave)
+```
+
+```{r}
+#RW21
+dat_rw21_relatives = dat_prolific[,c('PROLIFIC_PID', 'wave', 'RW21_1_2', 'RW21_1_3', 'RW21_1_4', 'RW21_1_5', 'RW21_2_2', 'RW21_2_3', 'RW21_2_4', 'RW21_2_5', 'RW21_3_2', 'RW21_3_3', 'RW21_3_4', 'RW21_3_5', 'RW21_4_2', 'RW21_4_3', 'RW21_4_4', 'RW21_4_5', 'RW21_5_2', 'RW21_5_3', 'RW21_5_4', 'RW21_5_5', 'RW21_9_2', 'RW21_9_3', 'RW21_9_4', 'RW21_9_5')]
+
+dat_rw21_friends = dat_prolific[,c('PROLIFIC_PID', 'wave', 'RW21_6_2', 'RW21_6_3', 'RW21_6_4', 'RW21_6_5', 'RW21_7_2', 'RW21_7_3', 'RW21_7_4', 'RW21_7_5')]
+
+```
+
+```{r}
+dat_rw21_1 = dat_prolific[,c('RW21_1_1', 'RW21_1_2', 'RW21_1_3', 'RW21_1_4', 'RW21_1_5', 'RW21_1_6')]
+dat_rw21_2 = dat_prolific[,c('RW21_2_1', 'RW21_2_2', 'RW21_2_3', 'RW21_2_4', 'RW21_2_5', 'RW21_2_6')]
+dat_rw21_3 = dat_prolific[,c('RW21_3_1', 'RW21_3_2', 'RW21_3_3', 'RW21_3_4', 'RW21_3_5', 'RW21_3_6')]
+dat_rw21_4 = dat_prolific[,c('RW21_4_1', 'RW21_4_2', 'RW21_4_3', 'RW21_4_4', 'RW21_4_5', 'RW21_4_6')]
+dat_rw21_5 = dat_prolific[,c('RW21_5_1', 'RW21_5_2', 'RW21_5_3', 'RW21_5_4', 'RW21_5_5', 'RW21_5_6')]
+dat_rw21_9 = dat_prolific[,c('RW21_9_1', 'RW21_9_2', 'RW21_9_3', 'RW21_9_4', 'RW21_9_5', 'RW21_9_6')]
+
+dat_rw21_6 = dat_prolific[,c('RW21_6_1', 'RW21_6_2', 'RW21_6_3', 'RW21_6_4', 'RW21_6_5', 'RW21_6_6')]
+dat_rw21_7 = dat_prolific[,c('RW21_7_1', 'RW21_7_2', 'RW21_7_3', 'RW21_7_4', 'RW21_7_5', 'RW21_7_6')]
+
+dat_rw21_1[is.na(dat_rw21_1)] <- 0
+dat_rw21_2[is.na(dat_rw21_2)] <- 0
+dat_rw21_3[is.na(dat_rw21_3)] <- 0
+dat_rw21_4[is.na(dat_rw21_4)] <- 0
+dat_rw21_5[is.na(dat_rw21_5)] <- 0
+dat_rw21_9[is.na(dat_rw21_9)] <- 0
+
+dat_rw21_6[is.na(dat_rw21_6)] <- 0
+dat_rw21_7[is.na(dat_rw21_7)] <- 0
+
+
+dat_relative = dat_rw21_1 + dat_rw21_2 + dat_rw21_3 + dat_rw21_4 + dat_rw21_5 + dat_rw21_9
+
+
+extract_values = function(df){
+  n = nrow(df)
+  value = numeric()
+  for (i in 1:n){
+    row = df[i,]
+    index = which(!row==0)
+    if (length(index) == 0){
+      value = c(value, NA)
+    } else if (length(index) == 1){
+      if (index == 6){
+        value = c(value, 0)
+      } else {
+        value = c(value, index-1)
+      }
+    } else {
+      value = c(value, index[length(length)]-1)
+    }
+  }
+  return(value)
+}
+
+test = extract_values(dat_relative)
+
+tmp = dat_prolific[,c('PROLIFIC_PID', 'wave')]
+tmp$RW21 = test
+tmp[tmp$PROLIFIC_PID == '5e1f9c6e105841000c7740d9', 'RW21']
+tmp[tmp$PROLIFIC_PID == '5d3515c39ce6590017010766', 'RW21']
+tmp[tmp$PROLIFIC_PID == '5dd331cfdd9a7434e8a26337', 'RW21']
+tmp[tmp$PROLIFIC_PID == '56721761980a3c0011277389', 'RW21']
+tmp[tmp$PROLIFIC_PID == '5e7da5d226ed71438566a7d8', 'RW21']
+
+colSums(is.na(tmp))
+```
+```{r}
+EPII8 <- dat_prolific[,c('EPII8_1_1', 'EPII8_2_1', 'EPII8_3_1', 'EPII8_4_1', 'EPII8_5_1', 'EPII8_6_1', 'EPII8_7_1', 'EPII8_8_1')]
+
+EPII8[is.na(EPII8)] <- 0
+
+sum_EPII8 = rowSums(EPII8)
+
+dat_prolific$EPII8 = sum_EPII8
+dat$EPII8 = sum_EPII8
+dat[dat$wave %in% c(1,4,5,7,8,9,10,11,12,13,14,15), 'EPII8'] <- NA
+dat_prolific[dat_prolific$wave %in% c(1,4,5,7,8,9,10,11,12,13,14,15), 'EPII8'] <- NA
+```
+
+```{r}
+RW22 <- dat_prolific[,c('RW22_1','RW22_2', 'RW22_3', 'RW22_4', 'RW22_5', 'RW22_6', 'RW22_7', 'RW22_8', 'RW22_9')]
+
+RW22[is.na(RW22)] <- 0
+
+sum_RW22 = rowSums(RW22)
+dat_prolific$RW22 = sum_RW22
+dat$RW22 = sum_RW22
+```
+
+
+```{r}
+break_dates = c(as.Date("2020-04-04"), 
+                as.Date("2020-04-11"), as.Date("2020-04-18"),
+                as.Date("2020-04-25"), as.Date("2020-05-02"),
+                as.Date("2020-05-09"), as.Date("2020-05-16"),
+                as.Date("2020-05-23"), as.Date("2020-05-30"),
+                as.Date("2020-06-06"), as.Date("2020-06-13"),
+                as.Date("2020-06-20"), as.Date("2020-06-27"),
+                as.Date("2020-07-04"), as.Date("2020-07-11"),
+                as.Date("2020-07-18"), as.Date("2020-07-25"),
+                as.Date("2020-08-01"), as.Date("2020-08-08"),
+                as.Date("2020-08-15"), as.Date("2020-08-22"),
+                as.Date("2020-08-29"), as.Date("2020-09-05"),
+                as.Date("2020-09-12"), as.Date("2020-09-19"),
+                as.Date("2020-09-26"), as.Date("2020-10-03"),
+                as.Date("2020-10-10"), as.Date("2020-10-17"),
+                as.Date("2020-10-24"), as.Date("2020-10-31"),
+                as.Date("2020-11-07"), as.Date("2020-11-14"),
+                as.Date("2020-11-21"), as.Date("2020-11-28"),
+                as.Date("2020-12-05"), as.Date("2020-12-12"),
+                as.Date("2020-12-19"), as.Date("2020-12-26"),
+                as.Date("2021-01-02"), as.Date("2021-01-09"),
+                as.Date("2021-01-16"), as.Date("2021-01-23"),
+                as.Date("2021-01-30"))
+
+date_labels = c('1','2','3','4','5','6','7','8','9','10',
+                '11','12','13','14','15','16','17','18','19','20',
+                '21','22','23','24','25','26','27','28','29','30',
+                '31','32','33','34','35','36','37','38','39','40',
+                '41','42','43','44')
+
+line_size=1.1
+
+
+var_name = 'Fear_COVID_raw'
+tmp_fear <- dat %>%
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp_fear <- na.omit(tmp_fear)
+
+# calculates the standard error of each group
+mean_fear<- ggplot(tmp_fear, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') +
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) +
+  ylim(10,18) +
+  theme_minimal()
+
+mean_fear
+
+var_name = 'Disgust_COVID_raw'
+tmp_disg <- dat %>%
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp_disg <- na.omit(tmp_disg)
+
+# calculates the standard error of each group
+mean_disg<- ggplot(tmp_disg, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') +
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) +
+  ylim(10,18) +
+  theme_minimal()
+
+mean_disg
+
+```
+
+
+```{r}
+
+ggsave(file="fear.svg", plot=mean_fear, width=20, height=16)
+ggsave(file="disg.svg", plot=mean_disg, width=20, height=16)
+
+```
+
+
+```{r}
+break_dates = c(as.Date("2020-04-04"), 
+                as.Date("2020-04-11"), as.Date("2020-04-18"),
+                as.Date("2020-04-25"), as.Date("2020-05-02"),
+                as.Date("2020-05-09"), as.Date("2020-05-16"),
+                as.Date("2020-05-23"), as.Date("2020-05-30"),
+                as.Date("2020-06-06"), as.Date("2020-06-13"),
+                as.Date("2020-06-20"), as.Date("2020-06-27"),
+                as.Date("2020-07-04"), as.Date("2020-07-11"),
+                as.Date("2020-07-18"), as.Date("2020-07-25"),
+                as.Date("2020-08-01"), as.Date("2020-08-08"),
+                as.Date("2020-08-15"), as.Date("2020-08-22"),
+                as.Date("2020-08-29"), as.Date("2020-09-05"),
+                as.Date("2020-09-12"), as.Date("2020-09-19"),
+                as.Date("2020-09-26"), as.Date("2020-10-03"),
+                as.Date("2020-10-10"), as.Date("2020-10-17"),
+                as.Date("2020-10-24"), as.Date("2020-10-31"),
+                as.Date("2020-11-07"), as.Date("2020-11-14"),
+                as.Date("2020-11-21"), as.Date("2020-11-28"),
+                as.Date("2020-12-05"), as.Date("2020-12-12"),
+                as.Date("2020-12-19"), as.Date("2020-12-26"),
+                as.Date("2021-01-02"), as.Date("2021-01-09"),
+                as.Date("2021-01-16"), as.Date("2021-01-23"),
+                as.Date("2021-01-30"))
+
+date_labels = c('1','2','3','4','5','6','7','8','9','10',
+                '11','12','13','14','15','16','17','18','19','20',
+                '21','22','23','24','25','26','27','28','29','30',
+                '31','32','33','34','35','36','37','38','39','40',
+                '41','42','43','44')
+
+line_size=1.1
+
+var_name = 'RW22'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name), na.rm=TRUE)/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+# calculates the standard error of each group
+mean_RW22 <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(3.75, 6.25) +
+  theme_minimal()
+
+mean_RW22
+tmp
+
+
+
+var_name = 'EPII8'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name), na.rm=TRUE)/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+# calculates the standard error of each group
+mean_EPII8 <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(1.75, 2.5) +
+  theme_minimal()
+
+mean_EPII8
+tmp
+
+# 
+# var_name = 'RW20'
+# tmp <- dat_prolific %>% 
+#       group_by(date) %>%
+#       count(RW20==1) %>%
+#       spread('RW20 == 1', n) %>%
+#       mutate(percentage = !!sym('TRUE')/(!!sym('FALSE')+!!sym('TRUE')),
+#              SE = sqrt(!!sym('FALSE')+!!sym('TRUE'))/(!!sym('FALSE')+!!sym('TRUE')))
+# 
+# tmp2 <- dat_prolific %>%
+#         group_by(date) %>%
+#         summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+#           sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+#           n = dplyr::n())
+# 
+# tmp <- left_join(tmp, tmp2, by='date')
+# 
+# tmp <- na.omit(tmp)
+# mean_rw20 <- ggplot(tmp, aes(x=date, y=percentage)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=percentage-1.96*SE, ymax=percentage+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(0, 0.5) +
+#   theme_minimal()
+# 
+# mean_rw20
+# tmp
+
+var_name = 'own_invest'
+tmp <- pgg_all %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name), na.rm=TRUE)/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+# calculates the standard error of each group
+mean_pgg <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(7, 14) +
+  theme_minimal()
+
+mean_pgg
+tmp
+
+
+var_name = 'biat_awgb'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name), na.rm=TRUE)/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+# calculates the standard error of each group
+mean_biat_awgb <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(-0.25, 0.1) +
+  theme_minimal()
+
+mean_biat_awgb
+tmp
+# 
+# var_name = 'biat_bwgb'
+# tmp <- dat %>% 
+#       group_by(date) %>%
+#       summarise(mean = round(mean(!!sym(var_name), na.rm=TRUE),2),  # calculates the mean of each group
+#                 sd = sd(!!sym(var_name), na.rm=TRUE), # calculates the standard deviation of each group
+#                 n = dplyr::n(),  # calculates the sample size per group
+#                 SE = sd(!!sym(var_name), na.rm=TRUE)/sqrt(dplyr::n()))
+# tmp <- na.omit(tmp)
+# # calculates the standard error of each group
+# mean_biat_bwgb <- ggplot(tmp, aes(x=date, y=mean)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(-0.1, 0.25) +
+#   theme_minimal()
+# 
+# mean_biat_bwgb
+# tmp
+# 
+# var_name = 'RW9'
+# tmp <- dat %>% 
+#       group_by(date) %>%
+#       summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+#                 sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+#                 n = dplyr::n(),  # calculates the sample size per group
+#                 SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+# tmp <- na.omit(tmp)
+# # calculates the standard error of each group
+# mean_RW9 <- ggplot(tmp, aes(x=date, y=mean)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(2.5, 3.25) +
+#   theme_minimal()
+# 
+# mean_RW9
+
+# var_name = 'RW13'
+# tmp <- dat %>% 
+#       group_by(date) %>%
+#       summarise(mean = round(mean(6-!!sym(var_name)),2),  # calculates the mean of each group
+#                 sd = sd(6-!!sym(var_name)), # calculates the standard deviation of each group
+#                 n = dplyr::n(),  # calculates the sample size per group
+#                 SE = sd(6-!!sym(var_name))/sqrt(dplyr::n()))
+# tmp <- na.omit(tmp) 
+# # calculates the standard error of each group
+# mean_RW13 <- ggplot(tmp, aes(x=date, y=mean)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(1.5, 1.75) +
+#   theme_minimal()
+# 
+# mean_RW13
+# 
+# var_name = 'norm3'
+# tmp <- dat %>% 
+#       group_by(date) %>%
+#       summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+#                 sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+#                 n = dplyr::n(),  # calculates the sample size per group
+#                 SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+# tmp <- na.omit(tmp)
+# 
+# # calculates the standard error of each group
+# mean_norm3 <- ggplot(tmp, aes(x=date, y=mean)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) +  
+#   ylim(4.25, 4.9) +
+#   theme_minimal()
+# 
+# mean_norm3
+    
+    
+var_name = 'VSA_raw_total'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_vsa <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(19, 24) +
+  theme_minimal()
+
+mean_vsa
+
+
+var_name = 'STAI_State_raw'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_stai <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) +  
+  ylim(36, 43) +
+  theme_minimal()
+
+mean_stai
+
+
+
+
+# 
+# var_name = 'NIH_TB_Emot_Support_uncorrTscore'
+# tmp <- dat %>% 
+#       group_by(date) %>%
+#       summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+#                 sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+#                 n = dplyr::n(),  # calculates the sample size per group
+#                 SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+# 
+# tmp <- na.omit(tmp)
+#     
+# # calculates the standard error of each group
+# mean_emot_support <- ggplot(tmp, aes(x=date, y=mean)) +
+#   geom_line(color="black", group=1, size=line_size) +
+#   geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+#   labs(title = var_name, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(43, 45) +
+#   theme_minimal()
+# 
+# mean_emot_support
+
+
+var_name = 'NIH_TB_Loneliness_uncorrTscore'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_emot_lone <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="black", group=1, size=line_size) +
+  geom_ribbon(aes(ymin=mean-1.96*SE, ymax=mean+1.96*SE, group=1), linetype=2, alpha=0.1) +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(54, 59) +
+  theme_minimal()
+
+mean_emot_lone
+
+
+```
+
+```{r}
+ggsave(file="RW22.svg", plot=mean_RW22, width=20, height=16)
+
+```
+
+
+```{r}
+# selected_subjects <- furthest_10$PROLIFIC_PID
+# selected_subjects
+selected_subjects <- furthest_5$PROLIFIC_PID
+selected_subjects
+```
+```{r}
+# selected_subjects <- c("558fe633fdf99b3f6868bf45", "5e1f9c6e105841000c7740d9", "56721761980a3c0011277389", "5d7182191742e10001d5fc94", "5d3515c39ce6590017010766")
+# selected_subjects <- c("558fe633fdf99b3f6868bf45", "5e1f9c6e105841000c7740d9", "56721761980a3c0011277389", "5d7182191742e10001d5fc94", "5d3515c39ce6590017010766")
+```
+```{r}
+pgg_all[pgg_all$PROLIFIC_PID=="5c4e58785994ca0001132982",]
+```
+
+
+```{r}
+variables = c('PROLIFIC_PID', 'wave', 'NEO_N_z.score', 'NEO_E_z.score', 'NEO_O_z.score', 'NEO_A_z.score', 'NEO_C_z.score')
+subjects = dat_prolific[dat_prolific$PROLIFIC_PID %in% selected_subjects, variables]
+subjects = subjects[subjects$wave==1,]
+
+subjects$Subjects <- c('Subject1', 'Subject2', 'Subject3', 'Subject4', 'Subject5')
+
+summary_subjects <- subjects %>% group_by(PROLIFIC_PID) %>%
+          summarise(NEO_N_z.score_mean = mean(NEO_N_z.score, na.rm = TRUE), NEO_E_z.score_mean = mean(NEO_E_z.score, na.rm = TRUE), NEO_O_z.score_mean = mean(NEO_O_z.score, na.rm = TRUE), NEO_A_z.score_mean = mean(NEO_A_z.score, na.rm = TRUE), NEO_C_z.score_mean = mean(NEO_C_z.score, na.rm = TRUE))
+
+summary_subjects
+
+summary_subjects <- summary_subjects %>% slice(match(selected_subjects, PROLIFIC_PID))
+
+summary_subjects$Subjects <- c('Subject1', 'Subject2', 'Subject3', 'Subject4', 'Subject5')
+
+summary_subjects
+# 
+subjects <- gather(subjects, "var_name", "value", -Subjects, -PROLIFIC_PID, -wave)
+
+subjects
+
+```
+
+```{r}
+# NEO_Bar_1 <- ggplot(summary_subjects, aes(fill=Subjects, y=value, x=var_name)) + 
+#     geom_bar(position="dodge", stat="identity") +
+#   theme_minimal()
+# NEO_Bar_1
+# 
+# NEO_Bar_2 <- ggplot(summary_subjects) + 
+#     geom_bar_pattern(
+#     aes(
+#       pattern = var_name, group=var_name,
+#       y=value, x=Subjects, fill=Subjects
+#     ),
+#     pattern_spacing = 0.025,
+#     stat="identity"
+#   ) +
+#   theme_minimal()
+# 
+# NEO_Bar_2
+
+NEO_Bar_3 <- ggplot(subjects, aes(group=var_name, fill=Subjects, y=value, x=Subjects)) + 
+    geom_bar(position="dodge", stat="identity", color="black") +
+  theme_minimal()
+NEO_Bar_3
+
+ggsave(file="bar.svg", plot=NEO_Bar_3, width=10, height=4)
+
+```
+```{r}
+dat <- left_join(dat, pgg_all, by=c('PROLIFIC_PID', 'wave'))
+corr_subset = dat[,c("RW9", "VSA_raw_total", "STAI_State_raw", '')]
+
+```
+
+```{r}
+
+col<- colorRampPalette(c("blue", "white", "red"))(20)
+heatmap(x = res, col = col, symm = TRUE)
+```
+
+
+```{r}
+violin_color = 'lightgrey'
+
+
+
+col <- 'RW22'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_RW22 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(0, 9) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  theme(legend.position = "none")
+single_RW22
+
+col <- 'EPII8'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_EPII8 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(0, 8) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+single_EPII8
+
+col <- 'biat_awgb'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_biat_awgb <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(-1, 1) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+single_biat_awgb
+
+# col <- 'biat_bwgb'
+# 
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# #subject_df$value_j <- jitter(subject_df$value)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_biat_bwgb <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(-1, 1) +
+#   theme(legend.position = "none") +
+#   theme_minimal() +
+#   theme(legend.position = "none")
+# 
+# single_biat_bwgb
+
+# 
+# 
+# col <- 'RW20'
+# 
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# subject_df
+# #subject_df$value_j <- jitter(subject_df$value, 0.5)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_rw20 <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col)-1, group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j-1, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(-1, 2) +
+#   theme(legend.position = "none") +
+#   theme_minimal() +
+#   theme(legend.position = "none")
+# 
+# single_rw20
+
+col <- 'own_invest'
+
+subject_df <- creat_subject_df_pgg(pgg_all, col, selected_subjects)
+subject_df
+#subject_df$value_j <- jitter(subject_df$value)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_pgg <- ggplot(data=pgg_all)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(0, 20) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+single_pgg
+
+# col <- 'RW9'
+# 
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# #subject_df$value_j <- jitter(subject_df$value)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_rw9 <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(0, 6) +
+#   theme(legend.position = "none") +
+#   theme_minimal() `
+#   theme(legend.position = "none")
+# 
+# single_rw9
+# 
+# col <- 'RW13'
+# 
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# subject_df$value <- 6-subject_df$value
+# #subject_df$value_j <- jitter(subject_df$value)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_rw13 <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=6-!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(0, 6) +
+#   theme(legend.position = "none") +
+#   theme_minimal() +
+#   theme(legend.position = "none")
+# 
+# single_rw13
+# 
+# 
+# col <- 'norm3'
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# #subject_df$value_j <- jitter(subject_df$value)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_norm3 <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(0, 6) +
+#   theme(legend.position = "none") +
+#   theme_minimal() +
+#   theme(legend.position = "none")
+# 
+# single_norm3
+
+
+col <- 'VSA_raw_total'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_vsa <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(6, 54) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+single_vsa
+
+col <- 'STAI_State_raw'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value, factor=10)
+subject_df$value_j <- subject_df$value
+
+# calculates the standard error of each group
+single_stai <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(20, 80) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+single_stai
+# 
+# col <- 'Fear_COVID_raw'
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# #subject_df$value_j <- jitter(subject_df$value)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_fear <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(-10, 40) +
+#   theme_minimal() +
+#   theme(legend.position = "none")
+#   
+# subject_df
+# single_fear
+# 
+# col <- 'NIH_TB_Emot_Support_uncorrTscore'
+# subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+# #subject_df$value_j <- jitter(subject_df$value, factor=20)
+# subject_df$value_j <- subject_df$value
+# 
+# # calculates the standard error of each group
+# single_emot <- ggplot(data=dat_prolific)+
+#   geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+#   geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+#   labs(title = col, x='', y='') + 
+#   scale_x_date(breaks = break_dates,
+#                date_labels = date_labels,
+#                limits=limits) + 
+#   ylim(0, 80) +
+#   theme_minimal() +
+#   theme(legend.position = "none") 
+# 
+# single_emot
+
+col <- 'NIH_TB_Loneliness_uncorrTscore'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+#subject_df$value_j <- jitter(subject_df$value, factor=5)
+subject_df$value_j <- subject_df$value
+
+subject_df
+# calculates the standard error of each group
+single_lone <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2, alpha=0.4) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = break_dates,
+               date_labels = date_labels,
+               limits=limits) + 
+  ylim(37.1, 85.2) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+single_lone
+
+```
+
+
+```{r, fig.width = 20, fig.height = 16}
+library('gridExtra')
+gg_grid = grid.arrange(single_RW22,mean_RW22, single_vsa, mean_vsa, single_stai, mean_stai, single_lone, mean_emot_lone, single_pgg, mean_pgg, single_EPII8, mean_EPII8, single_biat_awgb, mean_biat_awgb, nrow=4, ncol=4)
+gg_grid
+
+ggsave(file="update.svg", plot=gg_grid, width=20, height=16)
+```
+
+```{r}
+ggsave(file="update.png", plot=gg_grid, width=20, height=16, dpi=100)
+
+```
+
+```{r}
+violin_color = 'lightgrey'
+
+col <- 'EPII8'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_EPII8 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 10) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_EPII8
+
+col <- 'biat_awgb'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_biat_awgb <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill=violin_color, color=violin_color, alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 1) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_biat_awgb
+
+col <- 'biat_bwgb'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_biat_bwgb <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 1) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_biat_bwgb
+
+
+
+col <- 'RW20'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df
+subject_df$value_j <- jitter(subject_df$value, 0.5)
+# calculates the standard error of each group
+single_rw20 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col)-1, group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j-1, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j-1, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 2) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw20
+
+col <- 'pgg'
+
+subject_df <- creat_subject_df(pgg_all, col, selected_subjects)
+subject_df
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_pgg <- ggplot(data=pgg_all)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 22) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_pgg
+
+col <- 'RW9'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_rw9 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw9
+
+col <- 'RW13'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value <- 6-subject_df$value
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_rw13 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=6-!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw13
+
+
+col <- 'norm3'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+
+# calculates the standard error of each group
+single_norm3 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_norm3
+
+
+col <- 'VSA_raw_total'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_vsa <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 50) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_vsa
+
+col <- 'STAI_State_raw'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=10)
+# calculates the standard error of each group
+single_stai <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(10, 80) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+
+single_stai
+
+col <- 'Fear_COVID_raw'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_fear <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-10, 40) +
+  theme_classic() + 
+  theme(legend.position = "none")
+  
+subject_df
+single_fear
+
+col <- 'NIH_TB_Emot_Support_uncorrTscore'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=20)
+# calculates the standard error of each group
+single_emot <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 80) +
+  theme_classic() +
+  theme(legend.position = "none") 
+
+single_emot
+
+col <- 'NIH_TB_Loneliness_uncorrTscore'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=5)
+# calculates the standard error of each group
+single_lone <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(20, 100) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+
+single_lone
+```
+
+
+```{r}
+
+col <- 'RW20'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df
+subject_df$value_j <- jitter(subject_df$value, 0.5)
+# calculates the standard error of each group
+single_rw20 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col)-1, group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j-1, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j-1, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 2) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw20
+
+col <- 'pgg'
+
+subject_df <- creat_subject_df(pgg_all, col, selected_subjects)
+subject_df
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_pgg <- ggplot(data=pgg_all)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-1, 22) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_pgg
+
+col <- 'RW9'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_rw9 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw9
+
+col <- 'RW13'
+
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_rw13 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_rw13
+
+
+col <- 'norm3'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+
+# calculates the standard error of each group
+single_norm3 <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 6) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_norm3
+
+
+col <- 'VSA_raw_total'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_vsa <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 50) +
+  theme(legend.position = "none") +
+  theme_classic() +
+  theme(legend.position = "none")
+
+single_vsa
+
+col <- 'STAI_State_raw'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=10)
+# calculates the standard error of each group
+single_stai <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(10, 80) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+
+single_stai
+
+col <- 'Fear_COVID_raw'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value)
+# calculates the standard error of each group
+single_fear <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(-10, 40) +
+  theme_classic() + 
+  theme(legend.position = "none")
+  
+subject_df
+single_fear
+
+col <- 'NIH_TB_Emot_Support_uncorrTscore'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=20)
+# calculates the standard error of each group
+single_emot <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(0, 80) +
+  theme_classic() +
+  theme(legend.position = "none") 
+
+single_emot
+
+col <- 'NIH_TB_Loneliness_uncorrTscore'
+subject_df <- creat_subject_df(dat_prolific, col, selected_subjects)
+subject_df$value_j <- jitter(subject_df$value, factor=5)
+# calculates the standard error of each group
+single_lone <- ggplot(data=dat_prolific)+
+  geom_violin(aes(x=date, y=!!sym(col), group=date), fill='#8E94F2', color='#8E94F2', alpha=1) +
+  geom_line(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=1) +
+  geom_point(data=subject_df, aes(x=date, y=value_j, group=subject, colour=subject), size=2) +
+  labs(title = col, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(20, 100) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+
+single_lone
+```
+
+```{r}
+var_name = 'RW9'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+# calculates the standard error of each group
+mean_RW9 <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(2.5, 3.25) 
+
+mean_RW9
+
+var_name = 'RW13'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+tmp <- na.omit(tmp) 
+# calculates the standard error of each group
+mean_RW13 <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(4.3, 4.42) 
+
+mean_RW13
+
+var_name = 'norm3'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+tmp <- na.omit(tmp)
+
+# calculates the standard error of each group
+mean_norm3 <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) +  
+  ylim(4.25, 4.9) 
+
+mean_norm3
+    
+    
+var_name = 'VSA_raw_total'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_vsa <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(20, 24) 
+
+mean_vsa
+
+
+var_name = 'STAI_State_raw'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_stai <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) +  
+  ylim(38, 43) 
+
+mean_stai
+
+
+var_name = 'Fear_COVID_raw'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_fear <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(11,14) 
+
+mean_fear
+
+
+var_name = 'NIH_TB_Emot_Support_uncorrTscore'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_emot_support <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(43, 45) 
+
+mean_emot_support
+
+
+var_name = 'NIH_TB_Loneliness_uncorrTscore'
+tmp <- dat %>% 
+      group_by(date) %>%
+      summarise(mean = round(mean(!!sym(var_name)),2),  # calculates the mean of each group
+                sd = sd(!!sym(var_name)), # calculates the standard deviation of each group
+                n = dplyr::n(),  # calculates the sample size per group
+                SE = sd(!!sym(var_name))/sqrt(dplyr::n()))
+
+tmp <- na.omit(tmp)
+    
+# calculates the standard error of each group
+mean_emot_lone <- ggplot(tmp, aes(x=date, y=mean)) +
+  geom_line(color="#69b3a2", group=1) +
+  geom_point(color="#69b3a2", size=2) +
+  geom_errorbar(aes(ymin=mean-SE, ymax=mean+SE), width=1,
+                position=position_dodge(0.05), color="#69b3a2") +
+  labs(title = var_name, x='', y='') + 
+  scale_x_date(breaks = wave_dates,
+               date_labels = waves,
+               limits=limits) + 
+  ylim(55, 59) 
+
+mean_emot_lone
+
+```
+
