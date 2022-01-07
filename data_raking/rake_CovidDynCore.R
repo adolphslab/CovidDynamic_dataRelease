@@ -3,9 +3,9 @@ library('weights')
 library('forcats')
 
 # read census data
-census = read.csv("ACS_DemHousingEst2018ACS_2018_censusEstimate.csv")
+census = read.csv("../data/ACS_DemHousingEst2018ACS_2018_censusEstimate.csv")
 # read covid-dyn core sample
-dat = read.csv("CovidDyn_coreDem.csv")
+dat = read.csv("../data/Rake_coreDem.csv")
 # output directory
 outdir = paste(getwd(), "/rake_output/", sep ='')
 
