@@ -1,0 +1,102 @@
+def attent_check(dat, w):
+    # Extract the responses for the attention check questions    
+    attent_vars = ['NIHE1_9', 'DemC25', 
+                   'DISG1.2_23', 'DISG1.1_23','DISG2.2_23', 
+                   'ReSe1_23', 'Fed_13', 
+                   'RW23', 'GFPS2_11', 'EES1_32']
+    attent_df = dat.loc[dat['wave']==w, attent_vars]
+    attent_df = attent_df.dropna(axis=1, how='all')
+    # TODO: check whether the user fail the attention check questions.
+    # Attention check values
+    attent_chk = {'NIHE1_9': '4.0',
+              'DemC25': '3.0',
+              'DISG1.2_23': '4.0',
+              'DISG1.1_23': '2.0',
+              'DISG2.2_23': '4.0',
+              'ReSe1_23': '4.0',
+              'Fed_13': '7.0', 
+              'RW23': '2.0',
+              'GFPS2_11': '1.0',
+              'EES1_32': '5.0',}
+    attent_cols = attent_df.columns
+    n = len(attent_df)
+    nan_array = np.empty(n)
+    nan_array[:] = np.nan
+    
+    out = pd.DataFrame({'failed_att_qns_1': nan_array,
+                        'failed_att_qns_2': nan_array,
+                        'failed_att_qns_3': nan_array,
+                        'failed_att_qns_4': nan_array,
+                        'failed_att_qns_5': nan_array})
+    out_cols = out.columns
+
+    
+    for i in range(len(attent_cols)):
+        tmp = (attent_df[attent_cols[i]] != attent_chk[attent_cols[i]])
+        out[out_cols[i]] = tmp.values
+    return out
+
+
+
+
+
+
+# def cal_completed(incld, dat, w):
+#     finished = dat.loc[dat['wave']==str(w), ['PROLIFIC_PID', 'V5']]
+#     n_completed = len(finished.loc[finished['V5']=='1'])
+#     r_completed = n_completed/len(incld)
+#     return(n_completed, r_completed)
+
+# def incld_lst(s_in, s_w):
+#     #  Retrun a True False series indicating which record in w5 included list is not in the 
+#     #  inputted included list (w1, w2, w3, w4)
+#     return s_in.isin(s_w)
+
+
+# def ext_nouns(txt):
+#     # A package call textblob allows us to easily extract nouns
+# #     if txt is np.nan:
+# #         return np.nan
+# #     else:
+# #         blob = TextBlob(txt)
+# #         return blob.noun_phrases
+#     # function to test if something is a noun
+#     if txt is np.nan:
+#         return np.nan
+#     else:
+#         is_noun = lambda pos: pos[:2] == 'NN'
+#         # do the nlp stuff
+#         tokenized = nltk.word_tokenize(txt)
+#         nouns = [word for (word, pos) in nltk.pos_tag(tokenized) if is_noun(pos)]
+#         return nouns
+
+    
+# def ext_verbs(txt):
+
+#     if txt is np.nan:
+#         return np.nan
+#     else:
+#         is_noun = lambda pos: pos[:2] == 'VB'
+#         # do the nlp stuff
+#         tokenized = nltk.word_tokenize(txt)
+#         nouns = [word for (word, pos) in nltk.pos_tag(tokenized) if is_noun(pos)]
+#         return nouns
+
+
+# def count_nouns(ls):
+#     if ls is np.nan:
+#         return np.nan
+#     else:
+#         return len(ls)
+
+# # Map the data collected in w1 to other weeks
+# def map_w1_to_other(col_name, validation):
+#     dictionary = validation.loc[validation['wave']=='1', ['PROLIFIC_PID', col_name]].set_index('PROLIFIC_PID').to_dict()
+#     validation.loc[validation[col_name].isna(), col_name] = validation.loc[validation[col_name].isna(), 'PROLIFIC_PID'].map(dictionary[col_name])
+#     return validation
+
+# # Map the prolific demographic data to the validation participants
+# def map_prolific_to_valid(prolific_name, prolific_demo, valid_name, validation):
+#     dictionary = prolific_demo.loc[:, ['participant_id', prolific_name]].set_index('participant_id').to_dict()
+#     validation[valid_name] = validation['PROLIFIC_PID'].map(dictionary[prolific_name])
+#     return validation
