@@ -17,6 +17,7 @@ import pandas as pd
 from sklearn import preprocessing
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import os
 
 # the following part is to check whether the NEO scores for selected people make sense
 # =============================================================================
@@ -28,16 +29,14 @@ import matplotlib.pyplot as plt
 # sub_vectors = np.array(wave1_core.loc[:,['NEO_O_z-score', 'NEO_C_z-score', 'NEO_E_z-score', 'NEO_A_z-score', 'NEO_N_z-score']])
 # =============================================================================
 
-
-data = pd.read_csv('./Wave1-8_A-E.csv')
-#sub_list = pd.read_csv('./all_w1-8_completed.csv') # list of people who are in the core group with complete data
-#sub_list = pd.read_csv('./subject_all_waves.csv') # list of people who did w1 to w14
-sub_list = pd.read_csv('./all_compl_sample_prlfc.csv')
+data_path = os.path.join(os.path.expanduser('~'),'Box','COVID-19 Adolphs Lab', 'PreProcessed_Data')
+data = pd.read_csv(os.path.join(data_path,'Wave1-16_A-M_release.csv'),low_memory=False)
+list_path = os.path.join(os.path.expanduser('~'),'Box','COVID-19 Adolphs Lab', 'participant_lists')
+sub_list = pd.read_csv(os.path.join(list_path, 'core_sample_prlfc.csv'))
 sub_list = sub_list.reset_index (drop = True) 
 subs = sub_list['PROLIFIC_PID']
 
-wave1 = data.groupby(['wave']).get_group(1) 
-wave1['PROLIFIC_PID'] = wave1['PROLIFIC_PID'].str.strip() # strip space
+wave1 = data.groupby(['wave']).get_group('1') 
 wave1_core = wave1[wave1['PROLIFIC_PID'].isin(subs)] # get wave1 data only for the core group
 wave1_core = wave1_core.reset_index (drop = True) # reset index
 sub_labels = wave1_core['PROLIFIC_PID']
