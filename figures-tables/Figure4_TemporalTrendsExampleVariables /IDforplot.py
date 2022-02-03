@@ -31,13 +31,16 @@ import os
 
 data_path = os.path.join(os.path.expanduser('~'),'Box','COVID-19 Adolphs Lab', 'PreProcessed_Data')
 data = pd.read_csv(os.path.join(data_path,'Wave1-16_A-M_release.csv'),low_memory=False)
+data = data.loc[data.wave != '15b', :]
+data.wave.unique()
 list_path = os.path.join(os.path.expanduser('~'),'Box','COVID-19 Adolphs Lab', 'participant_lists')
-sub_list = pd.read_csv(os.path.join(list_path, 'core_sample_prlfc.csv'))
-sub_list = sub_list.reset_index (drop = True) 
-subs = sub_list['PROLIFIC_PID']
+# pids that completed all waves 
+wave_count = data.PROLIFIC_PID.value_counts()
+
+pids = wave_count.index[wave_count == 16]
 
 wave1 = data.groupby(['wave']).get_group('1') 
-wave1_core = wave1[wave1['PROLIFIC_PID'].isin(subs)] # get wave1 data only for the core group
+wave1_core = wave1[wave1['PROLIFIC_PID'].isin(pids)] # get wave1 data only for the subjects that completed all waves
 wave1_core = wave1_core.reset_index (drop = True) # reset index
 sub_labels = wave1_core['PROLIFIC_PID']
 sub_vectors = np.array(wave1_core.loc[:,['NEO_O_z-score', 'NEO_C_z-score', 'NEO_E_z-score', 'NEO_A_z-score', 'NEO_N_z-score']])
